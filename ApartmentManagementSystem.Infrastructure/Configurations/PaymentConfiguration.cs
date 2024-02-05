@@ -17,10 +17,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Amount)
             .IsRequired();
 
-        builder.Property(p => p.PaymentDate)
+        builder.Property(p => p.Date)
             .IsRequired();
 
-        builder.Property(p => p.PaymentMethod)
+        builder.Property(p => p.Method)
             .IsRequired()
             .HasMaxLength(20);
 

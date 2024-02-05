@@ -4,5 +4,5 @@ namespace ApartmentManagementSystem.Models.Entities;
 
 public class Role : IdentityRole<Guid>
 {
-    
+
 }
