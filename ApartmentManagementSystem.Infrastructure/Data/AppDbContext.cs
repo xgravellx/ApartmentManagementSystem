@@ -1,6 +1,7 @@
 ﻿using ApartmentManagementSystem.Models.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace ApartmentManagementSystem.Infrastructure.Data;
 
@@ -13,15 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
-        // Apartment ve User arasındaki bire-çok ilişkiyi yapılandırma.
-
-        // Invoice ve Apartment arasındaki bire-çok ilişkiyi yapılandırma.
-        
-        // Payment, User ve Invoice ile olan ilişkilerini yapılandırma.
-
-        // Eğer ek yapılandırmalar (indeksler, sınırlamalar vb.) varsa burada tanımlayın.
-        // Örneğin, kullanıcı adının ve e-posta adresinin benzersiz olması gibi.
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
 }

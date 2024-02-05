@@ -24,21 +24,16 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .IsRequired()
             .HasMaxLength(20);
 
+        // Bir User silindiğinde ilişkili Payments korunmalıdır
         builder.HasOne(p => p.User)
-            .WithMany(u => u.Payment)
+            .WithMany(u => u.Payment) // Property ismi Payments olmalıdır, çünkü ICollection tipinde.
             .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // Bir User silindiğinde ilişkili Payments da silinir.
+            .OnDelete(DeleteBehavior.Restrict); // Bu satır güncellendi
 
         builder.HasOne(p => p.Invoice)
             .WithMany()
             .HasForeignKey(p => p.InvoiceId)
             .OnDelete(DeleteBehavior.Restrict); // Ödemeler, ilişkili fatura silindiğinde silinmemelidir.
-
-        builder.Entity<Payment>()
-            .HasOne(p => p.Invoice)
-            .WithMany()
-            .HasForeignKey(p => p.InvoiceId)
-            .OnDelete(DeleteBehavior.Cascade); // Bir Invoice silindiğinde ilişkili Payments da silinir.
 
     }
 }

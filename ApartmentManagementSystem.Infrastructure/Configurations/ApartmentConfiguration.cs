@@ -31,9 +31,8 @@ public class ApartmentConfiguration : IEntityTypeConfiguration<Apartment>
         builder.HasOne(a => a.User)
             .WithMany(u => u.Apartment)
             .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // Bir User silindiğinde ilişkili Apartments da silinir.
+            .OnDelete(DeleteBehavior.SetNull); // Bir User silindiğinde UserId null olarak ayarlanır.
 
     }
-
 
 }
