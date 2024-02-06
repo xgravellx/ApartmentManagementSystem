@@ -1,5 +1,6 @@
 using System.Text;
 using ApartmentManagementSystem.Core.Helpers;
+using ApartmentManagementSystem.Core.Initialization;
 using ApartmentManagementSystem.Core.Interfaces;
 using ApartmentManagementSystem.Core.Profiles;
 using ApartmentManagementSystem.Core.Services;
@@ -19,7 +20,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHostedService<StartupService>();
+builder.Services.AddHostedService<RolesInitialization>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 

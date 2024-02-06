@@ -11,4 +11,5 @@ public interface IUserService
     Task<ResponseDto<Guid?>> CreateUser(UserCreateRequestDto request);
     Task<ResponseDto<bool>> UpdateUser(UserUpdateRequestDto request);
     Task<ResponseDto<bool>> DeleteUser(Guid id);
+    Task<ResponseDto<bool>> AssignRoleToUser(UserAssignToRoleRequestDto request);
 }

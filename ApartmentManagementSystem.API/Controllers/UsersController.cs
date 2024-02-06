@@ -78,5 +78,18 @@ namespace ApartmentManagementSystem.API.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("assign-role")]
+        public async Task<IActionResult> AssignRoleToUser(UserAssignToRoleRequestDto request)
+        {
+            var response = await userService.AssignRoleToUser(request);
+
+            if (response.AnyError)
+            {
+                return BadRequest(response.Errors);
+            }
+
+            return NoContent();
+        }
     }
 }

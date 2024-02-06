@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApartmentManagementSystem.Core.Services;
 
-public class UserService(UserManager<User> userManager) : IUserService
+public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager) : IUserService
 {
     public async Task<ResponseDto<List<UserGetAllResponseDto>>> GetAll()
     {
@@ -91,7 +91,6 @@ public class UserService(UserManager<User> userManager) : IUserService
             return ResponseDto<bool>.Fail(string.Join("", errors));
         }
 
-        // Mevcut parolayı kaldır
         var removePasswordResult = await userManager.RemovePasswordAsync(user);
 
         if (!removePasswordResult.Succeeded)
@@ -100,7 +99,6 @@ public class UserService(UserManager<User> userManager) : IUserService
             return ResponseDto<bool>.Fail(string.Join(" ", errors));
         }
 
-        // Yeni parolayı ekle
         var addPasswordResult = await userManager.AddPasswordAsync(user, request.PhoneNumber);
         if (!addPasswordResult.Succeeded)
         {
@@ -129,6 +127,31 @@ public class UserService(UserManager<User> userManager) : IUserService
         }
 
         return ResponseDto<bool>.Success(true);
-    }   
+    }
+
+    public async Task<ResponseDto<bool>> AssignRoleToUser(UserAssignToRoleRequestDto request)
+    {
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        if (user == null)
+        {
+            return ResponseDto<bool>.Fail("User not found");
+        }
+
+        var role = await roleManager.FindByIdAsync(request.RoleName.ToString());
+        if (role == null)
+        {
+            return ResponseDto<bool>.Fail("Role not found");
+        }
+
+        var result = await userManager.AddToRoleAsync(user, role.Name);
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToArray();
+            return ResponseDto<bool>.Fail(string.Join(" ", errors));
+        }
+
+        return ResponseDto<bool>.Success(true);
+    }
+
 
 }
