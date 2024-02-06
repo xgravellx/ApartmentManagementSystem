@@ -1,10 +1,12 @@
 using System.Text;
 using ApartmentManagementSystem.Core.Helpers;
+using ApartmentManagementSystem.Core.Interfaces;
 using ApartmentManagementSystem.Core.Profiles;
 using ApartmentManagementSystem.Core.Services;
 using ApartmentManagementSystem.Infrastructure.Data;
 using ApartmentManagementSystem.Models.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,7 +19,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddHostedService<StartupService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

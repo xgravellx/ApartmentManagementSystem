@@ -19,8 +19,4 @@
     <ProjectReference Include="..\ApartmentManagementSystem.Core\ApartmentManagementSystem.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>
