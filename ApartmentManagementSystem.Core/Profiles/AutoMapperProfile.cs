@@ -1,4 +1,4 @@
-﻿using ApartmentManagementSystem.Core.DTOs;
+﻿using ApartmentManagementSystem.Core.DTOs.AuthDto;
 using ApartmentManagementSystem.Models.Entities;
 using AutoMapper;
 
@@ -8,7 +8,7 @@ public class AutoMapperProfile : Profile
 {
     public AutoMapperProfile()
     {
-        CreateMap<User, AdminLoginRequestDto>().ReverseMap();
-        CreateMap<User, UserLoginRequestDto>().ReverseMap();
+        CreateMap<User, AuthAdminRequestDto>().ReverseMap();
+        CreateMap<User, AuthUserRequestDto>().ReverseMap();
     }
 }

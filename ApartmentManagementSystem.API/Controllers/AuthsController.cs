@@ -1,4 +1,4 @@
-﻿using ApartmentManagementSystem.Core.DTOs;
+﻿using ApartmentManagementSystem.Core.DTOs.AuthDto;
 using ApartmentManagementSystem.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ namespace ApartmentManagementSystem.API.Controllers
     public class AuthsController(IAuthService authService) : ControllerBase
     {
         [HttpPost("admin-login")]
-        public async Task<IActionResult> AdminLogin(AdminLoginRequestDto request)
+        public async Task<IActionResult> AdminLogin(AuthAdminRequestDto request)
         {
             var response = await authService.AdminLoginAsync(request);
             if (response.AnyError)
@@ -21,7 +21,7 @@ namespace ApartmentManagementSystem.API.Controllers
         }
 
         [HttpPost("user-login")]
-        public async Task<IActionResult> UserLogin(UserLoginRequestDto request)
+        public async Task<IActionResult> UserLogin(AuthUserRequestDto request)
         {
             var response = await authService.UserLoginAsync(request);
             if (response.AnyError)

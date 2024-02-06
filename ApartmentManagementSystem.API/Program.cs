@@ -21,12 +21,21 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHostedService<StartupService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
 });
-builder.Services.AddIdentity<User, Role>().AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddIdentity<User, Role>( options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequiredUniqueChars = 0;
+}).AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

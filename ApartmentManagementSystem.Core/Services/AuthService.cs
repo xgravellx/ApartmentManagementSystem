@@ -1,4 +1,4 @@
-﻿using ApartmentManagementSystem.Core.DTOs;
+﻿using ApartmentManagementSystem.Core.DTOs.AuthDto;
 using ApartmentManagementSystem.Core.Helpers;
 using ApartmentManagementSystem.Core.Interfaces;
 using ApartmentManagementSystem.Models.Entities;
@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ApartmentManagementSystem.Core.Services;
 
-// Signin manager kullanılabilir.
+// Signin manager kullanılabilir. - Admin için şifremi değiştirmek içinde service yaz
 public class AuthService(UserManager<User> userManager, SignInManager<User> signInManager, TokenGeneratorHelper tokenGeneratorHelper) : IAuthService
 {
-    public async Task<ResponseDto<string?>> AdminLoginAsync(AdminLoginRequestDto request)
+    public async Task<ResponseDto<string?>> AdminLoginAsync(AuthAdminRequestDto request)
     {
         var hasAdmin = await userManager.FindByNameAsync(request.UserName);
         if (hasAdmin == null)
@@ -28,7 +28,7 @@ public class AuthService(UserManager<User> userManager, SignInManager<User> sign
         return ResponseDto<string?>.Success(token);
     }
 
-    public async Task<ResponseDto<string?>> UserLoginAsync(UserLoginRequestDto request)
+    public async Task<ResponseDto<string?>> UserLoginAsync(AuthUserRequestDto request)
     {
         var user = userManager.Users.FirstOrDefault(u => u.IdentityNumber == request.IdentityNumber && u.PhoneNumber == request.PhoneNumber);
 

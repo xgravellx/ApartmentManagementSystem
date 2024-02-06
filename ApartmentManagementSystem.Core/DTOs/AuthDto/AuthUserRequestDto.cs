@@ -1,6 +1,6 @@
-﻿namespace ApartmentManagementSystem.Core.DTOs;
+﻿namespace ApartmentManagementSystem.Core.DTOs.AuthDto;
 
-public class UserLoginRequestDto
+public class AuthUserRequestDto
 {
     public string IdentityNumber { get; set; } = default!;
     public string PhoneNumber { get; set; } = default!;
