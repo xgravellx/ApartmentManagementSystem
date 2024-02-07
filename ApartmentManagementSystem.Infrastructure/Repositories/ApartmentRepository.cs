@@ -43,4 +43,13 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
     {
         return await context.Apartment.AnyAsync(x => x.ApartmentId == apartmentId);
     }
+
+    public async Task<List<int>> GetApartmentIdsByUserId(Guid userId)
+    {
+        return await context.Apartment
+            .Where(a => a.UserId == userId)
+            .Select(a => a.ApartmentId)
+            .ToListAsync();
+    }
+
 }

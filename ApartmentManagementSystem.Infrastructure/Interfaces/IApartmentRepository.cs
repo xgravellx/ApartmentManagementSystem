@@ -11,4 +11,5 @@ public interface IApartmentRepository
         
     Task DeleteAsync(int apartmentId);
     Task<bool> IsExistAsync(int apartmentId);
+    Task<List<int>> GetApartmentIdsByUserId(Guid userId);
 }
