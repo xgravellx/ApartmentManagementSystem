@@ -32,7 +32,6 @@ public class ApartmentConfiguration : IEntityTypeConfiguration<Apartment>
             .WithMany(u => u.Apartment)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.SetNull); // Bir User silindiğinde UserId null olarak ayarlanır.
-
     }
 
 }

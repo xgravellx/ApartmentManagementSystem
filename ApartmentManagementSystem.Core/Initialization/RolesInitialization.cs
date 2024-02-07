@@ -50,7 +50,7 @@ public class RolesInitialization(IServiceProvider serviceProvider) : IHostedServ
                 IdentityNumber = "12345678900",
             };
 
-            var result = await userManager.CreateAsync(adminUser, "Admin123Password!");
+            var result = await userManager.CreateAsync(adminUser, "Admin.1");
             if (!result.Succeeded)
             {
                 var errorDescription = string.Join(", ", result.Errors.Select(e => e.Description));

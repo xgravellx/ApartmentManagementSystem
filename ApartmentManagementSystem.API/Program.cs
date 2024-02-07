@@ -5,9 +5,10 @@ using ApartmentManagementSystem.Core.Interfaces;
 using ApartmentManagementSystem.Core.Profiles;
 using ApartmentManagementSystem.Core.Services;
 using ApartmentManagementSystem.Infrastructure.Data;
+using ApartmentManagementSystem.Infrastructure.Interfaces;
+using ApartmentManagementSystem.Infrastructure.Repositories;
 using ApartmentManagementSystem.Models.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -23,6 +24,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<RolesInitialization>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IApartmentService, ApartmentService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+
+builder.Services.AddScoped<IApartmentRepository, ApartmentRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

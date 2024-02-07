@@ -20,8 +20,4 @@
     <ProjectReference Include="..\ApartmentManagementSystem.Models\ApartmentManagementSystem.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
-
 </Project>
