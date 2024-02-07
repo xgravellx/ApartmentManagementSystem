@@ -11,22 +11,31 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
 {
     public async Task<ResponseDto<List<UserGetAllResponseDto>>> GetAll()
     {
-        var userList = await userManager.Users.Select(user => new UserGetAllResponseDto
-        {
-            Id = user.Id,
-            FullName = user.FullName,
-            IdentityNumber = user.IdentityNumber,
-            UserName = user.UserName,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber
-        }).ToListAsync();
+        var users = await userManager.Users.ToListAsync(); // Kullanıcıları önce listeye çek
+        var userList = new List<UserGetAllResponseDto>();
 
-        if (!userList.Any() || userList.Count == 0)
+        foreach (var user in users)
+        {
+            var roles = await userManager.GetRolesAsync(user); // Kullanıcının rollerini asenkron olarak al
+            userList.Add(new UserGetAllResponseDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                IdentityNumber = user.IdentityNumber,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Role = roles.FirstOrDefault() // Roller listesinin ilk elemanını alır, roller boşsa null döner
+            });
+        }
+
+        if (!userList.Any())
         {
             return ResponseDto<List<UserGetAllResponseDto>>.Fail("No users found.");
         }
 
         return ResponseDto<List<UserGetAllResponseDto>>.Success(userList);
+
     }
 
 
