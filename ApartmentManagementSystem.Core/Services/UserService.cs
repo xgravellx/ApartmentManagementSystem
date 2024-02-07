@@ -137,7 +137,7 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
             return ResponseDto<bool>.Fail("User not found");
         }
 
-        var role = await roleManager.FindByIdAsync(request.RoleName.ToString());
+        var role = await roleManager.FindByIdAsync(request.RoleId.ToString());
         if (role == null)
         {
             return ResponseDto<bool>.Fail("Role not found");
