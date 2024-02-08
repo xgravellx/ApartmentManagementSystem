@@ -17,7 +17,7 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
     public async Task<IEnumerable<Invoice>> GetByApartmentIdAsync(int apartmentId)
     {
         return await context.Invoice
-            .Where(x => x.ApartmentId == apartmentId)
+            .Where(i => i.ApartmentId == apartmentId)
             .ToListAsync();
     }
 
@@ -25,37 +25,53 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
     {
         IQueryable<Invoice> query = context.Invoice.Include(i => i.Apartment).AsQueryable();
 
-        // Apartman ID'leri kontrolü
         if (request.ApartmentIds != null && request.ApartmentIds.Any())
         {
-            query = query.Where(invoice => request.ApartmentIds.Contains(invoice.ApartmentId));
+            query = query
+                .Where(i => request.ApartmentIds
+                .Contains(i.ApartmentId));
         }
 
         // Aylar kontrolü
         if (request.Months != null && request.Months.Any())
         {
-            query = query.Where(invoice => request.Months.Contains(invoice.Month));
+            query = query
+                .Where(i => request.Months
+                .Contains(i.Month));
         }
 
         // Yıllar kontrolü
         if (request.Years != null && request.Years.Any())
         {
-            query = query.Where(invoice => request.Years.Contains(invoice.Year));
+            query = query
+                .Where(i => request.Years
+                .Contains(i.Year));
         }
 
         // Kullanıcı ID'leri kontrolü
         if (request.UserIds != null && request.UserIds.Any())
         {
-            query = query.Where(invoice => invoice.Apartment.UserId.HasValue && request.UserIds.Contains(invoice.Apartment.UserId.Value));
+            query = query
+                .Where(i => i.Apartment.UserId.HasValue && request.UserIds
+                .Contains(i.Apartment.UserId.Value));
         }
 
         // Ödeme durumu kontrolü
         if (request.PaymentStatus.HasValue)
         {
-            query = query.Where(invoice => invoice.PaymentStatus == request.PaymentStatus.Value);
+            query = query
+                .Where(i => i.PaymentStatus == request.PaymentStatus.Value);
         }
 
         return await query.ToListAsync();
+    }
+
+
+    public async Task<Invoice> AddInvoiceAsync(Invoice invoice)
+    {
+        context.Invoice.Add(invoice);
+        await context.SaveChangesAsync();
+        return invoice;
     }
 
 

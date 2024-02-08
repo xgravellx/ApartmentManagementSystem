@@ -10,4 +10,5 @@ public interface IInvoiceRepository
     Task<IEnumerable<Invoice>> GetByApartmentIdAsync(int apartmentId);
 
     Task<IEnumerable<Invoice>> GetFilteredAsync(InvoiceFilterRequestDto request);
+    Task<Invoice> AddInvoiceAsync(Invoice invoice);
 }

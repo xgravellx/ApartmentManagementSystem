@@ -6,6 +6,8 @@ using ApartmentManagementSystem.Models.Entities;
 using ApartmentManagementSystem.Models.Shared;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using InvoiceCreateGeneralRequestDto = ApartmentManagementSystem.Models.Shared.InvoiceCreateGeneralRequestDto;
 
 namespace ApartmentManagementSystem.Core.Services;
 
@@ -21,54 +23,79 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
     }
 
     // apartment id ye göre faturaları getir
-    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(InvoiceByApartmentIdRequestDto request)
+    // todo -> optimize etmelisin
+    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(int ApartmentId, string userId, bool isAdmin)
     {
-        var user = await userManager.FindByIdAsync(request.UserId.ToString());
-        if (user == null)
-        {
-            return ResponseDto<List<InvoiceResponseDto>>.Fail("User not found.");
-        }
-
-        var roles = await userManager.GetRolesAsync(user);
-        bool isUserAdmin = roles.Contains("Admin");
-
-        IEnumerable<Invoice> invoices;
-
-        if (isUserAdmin)
-        {
-            invoices = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(request.ApartmentId);
-        }
-        else
-        {
-            var apartment = await unitOfWork.ApartmentRepository.GetByIdAsync(request.ApartmentId);
-            if (apartment == null || apartment.UserId.ToString() != request.UserId.ToString())
-            {
-                return ResponseDto<List<InvoiceResponseDto>>.Fail("Access denied or apartment does not exist.");
-            }
-
-            invoices = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(request.ApartmentId);
-        }
-
-        var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices);
-        return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList ?? []);
-
-    }
-
-    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetFiltered(InvoiceFilterRequestDto request, string userId, bool isAdmin)
-    {
-        // isAdmin kontrolü
         if (!isAdmin)
         {
-            var apartmentIds = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserId(Guid.Parse(userId));
-            request.ApartmentIds = apartmentIds.ToList();
+            var userIdFindUser = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == userId);
+            var userIdByUserId = userIdFindUser!.Id;
+            var apartmentId = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(userIdByUserId);
+            var invoicesByUser = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(apartmentId);
+            var invoiceDtoListByUser = mapper.Map<List<InvoiceResponseDto>>(invoicesByUser);
+            return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoListByUser);
 
-            request.UserIds = new List<Guid> { Guid.Parse(userId) };
         }
 
-        var invoices = await unitOfWork.InvoiceRepository.GetFilteredAsync(request);
-
+        var invoices = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(ApartmentId);
         var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices);
         return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList);
 
     }
+
+    // filtrelenmiş fatura listesi
+    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetFiltered(InvoiceFilterRequestDto request, string userId, bool isAdmin)
+    {
+        if (!isAdmin)
+        {
+            var userIdFindUser = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == userId);
+            var userIdByUserId = userIdFindUser!.Id;
+            var apartmentId = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(userIdByUserId);
+            request.ApartmentIds = [apartmentId];
+            request.UserIds = [userIdByUserId];
+        }
+
+        var invoices = await unitOfWork.InvoiceRepository.GetFilteredAsync(request);
+        var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices);
+        return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList);
+    }
+
+    // block a göre genel fatura oluşturma
+    public async Task<ResponseDto<bool?>> CreateGeneralInvoice(InvoiceCreateGeneralRequestDto request) // todo: eksik
+    {
+        var activeApartments = await unitOfWork.ApartmentRepository.GetActiveApartmentsByBlock(request.Block);
+        if (!activeApartments.Any())
+        {
+            return ResponseDto<bool?>.Fail("No active apartments found for the block.");
+        }
+
+        var totalApartments = activeApartments.Count;
+        var amountPerApartment = request.Amount / totalApartments;
+
+        foreach (var apartment in activeApartments)
+        {
+            var invoice = new Invoice
+            {
+                Type = request.Type,
+                Amount = amountPerApartment,
+                Year = request.Year,
+                Month = request.Month,
+                PaymentStatus = false,
+                ApartmentId = apartment.ApartmentId
+            };
+
+            await unitOfWork.InvoiceRepository.AddInvoiceAsync(invoice);
+        }
+
+        return ResponseDto<bool?>.Success(true);
+    }
+
+    // fatura ekleme - aylık fatura oluşturma
+    // fatura güncelleme
+    // fatura silme
+    // fatura var mı kontrolü
+    // fatura ödeme durumu güncelleme
+    // fatura atama işlemleri
+    // ⦁Daire başına ödenmesi gereken aidat bilgilerini  toplu olarak veya tek tek  dairelere atama yaparak gerçekleştirebilir
+
 }

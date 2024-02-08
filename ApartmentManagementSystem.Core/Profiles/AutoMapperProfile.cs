@@ -4,6 +4,7 @@ using ApartmentManagementSystem.Core.DTOs.InvoiceDto;
 using ApartmentManagementSystem.Models.Entities;
 using ApartmentManagementSystem.Models.Shared;
 using AutoMapper;
+using InvoiceCreateGeneralRequestDto = ApartmentManagementSystem.Models.Shared.InvoiceCreateGeneralRequestDto;
 
 namespace ApartmentManagementSystem.Core.Profiles;
 
@@ -24,5 +25,6 @@ public class AutoMapperProfile : Profile
         CreateMap<Invoice, InvoiceResponseDto>().ReverseMap();
         CreateMap<Invoice, InvoiceByApartmentIdRequestDto>().ReverseMap();
         CreateMap<Invoice, InvoiceFilterRequestDto>().ReverseMap();
+        CreateMap<Invoice, InvoiceCreateGeneralRequestDto>().ReverseMap(); 
     }
 }

@@ -11,5 +11,6 @@ public interface IApartmentRepository
         
     Task DeleteAsync(int apartmentId);
     Task<bool> IsExistAsync(int apartmentId);
-    Task<List<int>> GetApartmentIdsByUserId(Guid userId);
+    Task<int> GetApartmentIdsByUserIdAsync(Guid userId);
+    Task<List<Apartment>> GetActiveApartmentsByBlock(string block);
 }

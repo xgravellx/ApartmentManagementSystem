@@ -20,7 +20,7 @@ namespace ApartmentManagementSystem.API.Controllers
             {
                 return NotFound(response.Errors);
             }
-            return Ok(response);
+            return Ok(response.Data);
         }
 
         [HttpGet("{id}")]
@@ -31,7 +31,7 @@ namespace ApartmentManagementSystem.API.Controllers
             {
                 return NotFound(response.Errors);
             }
-            return Ok(response);
+            return Ok(response.Data);
         }
 
         [HttpPost]
