@@ -13,4 +13,5 @@ public interface IApartmentRepository
     Task<bool> IsExistAsync(int apartmentId);
     Task<int> GetApartmentIdsByUserIdAsync(Guid userId);
     Task<List<Apartment>> GetActiveApartmentsByBlock(string block);
+    Task<bool> AreApartmentIdsExistAsync(List<int> apartmentIds);
 }

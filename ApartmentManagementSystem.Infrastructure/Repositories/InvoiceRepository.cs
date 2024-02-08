@@ -66,7 +66,6 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
         return await query.ToListAsync();
     }
 
-
     public async Task<Invoice> AddInvoiceAsync(Invoice invoice)
     {
         context.Invoice.Add(invoice);
@@ -74,7 +73,23 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
         return invoice;
     }
 
+    public async Task<Invoice> GetByIdAsync(int invoiceId)
+    {
+        return await context.Invoice.FindAsync(invoiceId);
+    }
 
+    public async Task<bool> UpdateInvoiceAsync(Invoice invoice)
+    {
+        context.Invoice.Update(invoice);
+        return await context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> DeleteInvoiceAsync(int invoiceId)
+    {
+        var invoice = await context.Invoice.FindAsync(invoiceId);
+        context.Invoice.Remove(invoice!);
+        return await context.SaveChangesAsync() > 0;
+    }
 
 
 }

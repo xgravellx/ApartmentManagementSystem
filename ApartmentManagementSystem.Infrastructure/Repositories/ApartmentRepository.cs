@@ -59,4 +59,11 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
             .ToListAsync();
     }
 
+    public async Task<bool> AreApartmentIdsExistAsync(List<int> apartmentIds)
+    {
+        return await context.Apartment
+            .AnyAsync(a => apartmentIds
+            .Contains(a.ApartmentId));
+    }
+
 }

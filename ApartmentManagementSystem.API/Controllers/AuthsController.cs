@@ -15,9 +15,9 @@ namespace ApartmentManagementSystem.API.Controllers
             var response = await authService.AdminLoginAsync(request);
             if (response.AnyError)
             {
-                return BadRequest(response);
+                return BadRequest(response.Errors);
             }
-            return Ok(response);
+            return Ok(response.Data);
         }
 
         [HttpPost("user-login")]
@@ -26,9 +26,9 @@ namespace ApartmentManagementSystem.API.Controllers
             var response = await authService.UserLoginAsync(request);
             if (response.AnyError)
             {
-                return BadRequest(response);
+                return BadRequest(response.Errors);
             }
-            return Ok(response);
+            return Ok(response.Data);
         }
 
         [HttpPost("logout")]
@@ -39,7 +39,7 @@ namespace ApartmentManagementSystem.API.Controllers
             {
                 return BadRequest(response);
             }
-            return Ok(response);
+            return NoContent();
         }
     }
 }

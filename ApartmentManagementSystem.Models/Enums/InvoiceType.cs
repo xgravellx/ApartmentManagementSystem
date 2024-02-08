@@ -4,5 +4,6 @@ public enum InvoiceType
 {
     Electricity,
     Water,
-    NaturalGas
+    NaturalGas,
+    Dues
 }

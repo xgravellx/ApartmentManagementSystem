@@ -67,5 +67,40 @@ namespace ApartmentManagementSystem.API.Controllers
             return Created("", response.Data);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPost("dues")]
+        public async Task<IActionResult> AddDuesInvoice(InvoiceCreateDuesRequestDto request)
+        {
+            var response = await invoiceService.CreateDuesInvoice(request);
+            if (response.AnyError)
+            {
+                return BadRequest(response.Errors);
+            }
+            return Created("", response.Data);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateInvoice(InvoiceUpdateRequestDto request)
+        {
+            var response = await invoiceService.UpdateInvoice(request);
+            if (response.AnyError)
+            {
+                return BadRequest(response.Errors);
+            }
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteInvoice(int id)
+        {
+            var response = await invoiceService.DeleteInvoice(id);
+            if (response.AnyError)
+            {
+                return BadRequest(response.Errors);
+            }
+            return NoContent();
+        }
     }
 }
