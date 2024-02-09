@@ -1,6 +1,7 @@
 ﻿using ApartmentManagementSystem.Core.DTOs.ApartmentDto;
 using ApartmentManagementSystem.Core.DTOs.AuthDto;
 using ApartmentManagementSystem.Core.DTOs.InvoiceDto;
+using ApartmentManagementSystem.Core.DTOs.PaymentDto;
 using ApartmentManagementSystem.Models.Entities;
 using ApartmentManagementSystem.Models.Shared;
 using AutoMapper;
@@ -26,5 +27,10 @@ public class AutoMapperProfile : Profile
         CreateMap<Invoice, InvoiceFilterRequestDto>().ReverseMap();
         CreateMap<Invoice, InvoiceCreateGeneralRequestDto>().ReverseMap(); 
         CreateMap<Invoice, InvoiceUpdateRequestDto>().ReverseMap();
+
+        // Payment için mapping konfigürasyonu
+        CreateMap<Payment, PaymentGetAllResponseDto>().ReverseMap();
+        CreateMap<Payment, PaymentDto>().ReverseMap();
+        CreateMap<Payment, PaymentRegularRequestDto>().ReverseMap();
     }
 }

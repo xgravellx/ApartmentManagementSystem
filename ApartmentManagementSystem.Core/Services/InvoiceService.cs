@@ -18,7 +18,7 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
     {
         var invoices = await unitOfWork.InvoiceRepository.GetAllAsync();
 
-        var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices ?? new List<Invoice>());
+        var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices ?? []);
         return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList);
     }
 

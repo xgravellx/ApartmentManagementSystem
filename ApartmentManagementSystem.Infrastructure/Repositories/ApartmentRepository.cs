@@ -7,6 +7,7 @@ namespace ApartmentManagementSystem.Infrastructure.Repositories;
 
 public class ApartmentRepository(AppDbContext context) : IApartmentRepository
 {
+    // todo: List dönmesi gerekiyor
     public async Task<IEnumerable<Apartment>> GetAllAsync()
     {
         return await context.Apartment.ToListAsync();
