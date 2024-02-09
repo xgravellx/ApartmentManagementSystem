@@ -26,10 +26,10 @@ namespace ApartmentManagementSystem.API.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetById(Guid userId)
         {
-            var response = await userService.GetById(id);
+            var response = await userService.GetById(userId);
 
             if (response.AnyError)
             {
@@ -66,10 +66,10 @@ namespace ApartmentManagementSystem.API.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
         {
-            var response = await userService.DeleteUser(id);
+            var response = await userService.DeleteUser(userId);
 
             if (response.AnyError)
             {

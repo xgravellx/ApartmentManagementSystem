@@ -29,9 +29,9 @@ public class ApartmentConfiguration : IEntityTypeConfiguration<Apartment>
             .HasMaxLength(10);
 
         builder.HasOne(a => a.User)
-            .WithMany(u => u.Apartment)
-            .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.SetNull); // Bir User silindiğinde UserId null olarak ayarlanır.
+            .WithOne(u => u.Apartment)
+            .HasForeignKey<User>(u => u.ApartmentId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
 }

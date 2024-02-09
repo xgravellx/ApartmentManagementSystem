@@ -8,7 +8,8 @@ public class User : IdentityUser<Guid>
     public string IdentityNumber { get; set; } = default!;
     public bool Regular { get; set; }
 
-    // Navigation properties
-    public virtual ICollection<Apartment> Apartment { get; set; }
+    public int? ApartmentId { get; set; }
+
+    public virtual Apartment? Apartment { get; set; }
     public virtual ICollection<Payment> Payment { get; set; }
 }

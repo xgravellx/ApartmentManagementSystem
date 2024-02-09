@@ -1,59 +1,50 @@
 ﻿using ApartmentManagementSystem.Core.DTOs.UserDto;
 using ApartmentManagementSystem.Core.Interfaces;
-using ApartmentManagementSystem.Infrastructure.Interfaces;
 using ApartmentManagementSystem.Models.Entities;
-using ApartmentManagementSystem.Models.Enums;
 using ApartmentManagementSystem.Models.Shared;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace ApartmentManagementSystem.Core.Services;
 
-public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IUnitOfWork unitOfWork) : IUserService
+public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IMapper mapper) : IUserService
 {
-    public async Task<ResponseDto<List<UserGetAllResponseDto>>> GetAll()
+    public async Task<ResponseDto<List<UserResponseDto>>> GetAll()
     {
-        var users = await userManager.Users.ToListAsync(); // Kullanıcıları önce listeye çek
-        var userList = new List<UserGetAllResponseDto>();
+        var users = await userManager.Users.ToListAsync(); 
+        var userList = new List<UserResponseDto>();
 
         foreach (var user in users)
         {
-            var roles = await userManager.GetRolesAsync(user); // Kullanıcının rollerini asenkron olarak al
-            userList.Add(new UserGetAllResponseDto
+            var roles = await userManager.GetRolesAsync(user);
+            userList.Add(new UserResponseDto
             {
-                Id = user.Id,
+                UserId = user.Id,
                 FullName = user.FullName,
                 IdentityNumber = user.IdentityNumber,
-                UserName = user.UserName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                Role = roles.FirstOrDefault() // Roller listesinin ilk elemanını alır, roller boşsa null döner
+                Role = roles.FirstOrDefault()
             });
         }
 
-        if (!userList.Any())
-        {
-            return ResponseDto<List<UserGetAllResponseDto>>.Fail("No users found.");
-        }
-
-        return ResponseDto<List<UserGetAllResponseDto>>.Success(userList);
+        return ResponseDto<List<UserResponseDto>>.Success(userList ?? []);
 
     }
 
-
-    public async Task<ResponseDto<User>> GetById(Guid id)
+    public async Task<ResponseDto<UserResponseDto>> GetById(Guid userId)
     {
-        var user = await userManager.FindByIdAsync(id.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user == null)
         {
-            return ResponseDto<User>.Fail("User is not found");
+            return ResponseDto<UserResponseDto>.Fail("User is not found");
         }
 
-        return ResponseDto<User>.Success(user);
+        var foundUser = mapper.Map<UserResponseDto>(user);
+        return ResponseDto<UserResponseDto>.Success(foundUser);
     }
-
 
     public async Task<ResponseDto<Guid?>> CreateUser(UserCreateRequestDto request)
     {
@@ -70,19 +61,16 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
         var result = await userManager.CreateAsync(user, request.PhoneNumber);
 
         if (!result.Succeeded)
-        {   // Error durumunu düzelt
-            var errors = result.Errors.Select(e => e.Description).ToArray();
-            return ResponseDto<Guid?>.Fail(string.Join("", errors));
-        }
-        else
         {
-            return ResponseDto<Guid?>.Success(user.Id);
+            return ResponseDto<Guid?>.Fail("User not created.");
         }
+
+        return ResponseDto<Guid?>.Success(user.Id);
     }
 
     public async Task<ResponseDto<bool>> UpdateUser(UserUpdateRequestDto request)
     {
-        var user = await userManager.FindByIdAsync(request.Id.ToString());
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
 
         if (user == null)
         {
@@ -99,44 +87,25 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
 
         if (!result.Succeeded)
         {
-            var errors = result.Errors.Select(e => e.Description).ToArray();
-            return ResponseDto<bool>.Fail(string.Join("", errors));
+            return ResponseDto<bool>.Fail("User failed to update.");
         }
 
-        var removePasswordResult = await userManager.RemovePasswordAsync(user);
-
-        if (!removePasswordResult.Succeeded)
-        {
-            var errors = removePasswordResult.Errors.Select(e => e.Description).ToArray();
-            return ResponseDto<bool>.Fail(string.Join(" ", errors));
-        }
-
-        var addPasswordResult = await userManager.AddPasswordAsync(user, request.PhoneNumber);
-        if (!addPasswordResult.Succeeded)
-        {
-            var errors = addPasswordResult.Errors.Select(e => e.Description).ToArray();
-            return ResponseDto<bool>.Fail(string.Join(" ", errors));
-        }
+        await userManager.RemovePasswordAsync(user);
+        await userManager.AddPasswordAsync(user, request.PhoneNumber);
 
         return ResponseDto<bool>.Success(true);
     }
 
-    public async Task<ResponseDto<bool>> DeleteUser(Guid id)
+    public async Task<ResponseDto<bool>> DeleteUser(Guid userId)
     {
-        var user = await userManager.FindByIdAsync(id.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user == null)
         {
             return ResponseDto<bool>.Fail("User is not found");
         }
 
-        var result = await userManager.DeleteAsync(user);
-
-        if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description).ToArray();
-            return ResponseDto<bool>.Fail(string.Join(" ", errors));
-        }
+        await userManager.DeleteAsync(user);
 
         return ResponseDto<bool>.Success(true);
     }
@@ -155,12 +124,7 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
             return ResponseDto<bool>.Fail("Role not found");
         }
 
-        var result = await userManager.AddToRoleAsync(user, role.Name);
-        if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description).ToArray();
-            return ResponseDto<bool>.Fail(string.Join(" ", errors));
-        }
+        await userManager.AddToRoleAsync(user, role.Name);
 
         return ResponseDto<bool>.Success(true);
     }
