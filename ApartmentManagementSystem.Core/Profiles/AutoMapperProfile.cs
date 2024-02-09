@@ -13,7 +13,9 @@ public class AutoMapperProfile : Profile
 {
     public AutoMapperProfile()
     {
-        CreateMap<User, UserResponseDto>().ReverseMap();
+        CreateMap<User, UserResponseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
+
         CreateMap<User, AuthAdminRequestDto>().ReverseMap();
         CreateMap<User, AuthUserRequestDto>().ReverseMap();
 
