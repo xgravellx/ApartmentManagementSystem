@@ -8,6 +8,8 @@ using ApartmentManagementSystem.Infrastructure.Data;
 using ApartmentManagementSystem.Infrastructure.Interfaces;
 using ApartmentManagementSystem.Infrastructure.Repositories;
 using ApartmentManagementSystem.Models.Entities;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 
 builder.Services.AddControllers();
 
@@ -37,6 +40,9 @@ builder.Services.AddIdentity<User, Role>( options =>
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
+builder.Services.AddScoped<TokenGeneratorHelper>();
+builder.Services.AddScoped<InvoiceHelper>();
+
 builder.Services.AddHostedService<RolesInitialization>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -48,7 +54,6 @@ builder.Services.AddScoped<IApartmentRepository, ApartmentRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<TokenGeneratorHelper>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -70,6 +75,12 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHangfire(config =>
+{
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("SqlServer"));
+});
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -77,6 +88,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHangfireDashboard();
+app.UseHangfireServer();
+
+RecurringJob.AddOrUpdate<IInvoiceService>(
+    "CheckAndApplyLateFees", // Ýþe verilecek benzersiz bir isim
+    service => service.CheckAndApplyLateFees(),
+    "0 0 * * *"); // CRON ifadesi: Her gün gece yarýsýnda
 
 app.UseHttpsRedirection();
 

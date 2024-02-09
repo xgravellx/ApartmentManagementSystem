@@ -55,10 +55,10 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
     }
 
+ 
+
     // GetLastPaymentByApartmentId
     // kullanıcı için ödeme sistemi
-    // filtre: kullanıcı ay bazlı olarak ödenmiş ya da ödenmemiş faturalarını getir
-    // filtre: user ya da blok bazlı ödenmiş ve ödenmemiş aidat/fatura filtresi
     // fatura/Aidat ay sonuna kadar ödenmemişse %10 ceza uygula
     // 1 sene boyunca aidatlarını düzenli ödeyen kullanıcılar, bir sonraki sene aidatlarını %10 indirimli öder
 }

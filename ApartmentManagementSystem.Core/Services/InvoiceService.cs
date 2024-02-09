@@ -8,6 +8,8 @@ using ApartmentManagementSystem.Models.Shared;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ApartmentManagementSystem.Core.Helpers;
+using ApartmentManagementSystem.Infrastructure.Repositories;
 
 namespace ApartmentManagementSystem.Core.Services;
 
@@ -43,7 +45,8 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
     }
 
-    // filtrelenmiş fatura listesi
+    // filtrelenmiş fatura listesi 
+    // todo: ödenmişse fatura bilgilerini de gönder
     public async Task<ResponseDto<List<InvoiceResponseDto>>> GetFiltered(InvoiceFilterRequestDto request, string userId, bool isAdmin)
     {
         if (!isAdmin)
@@ -84,6 +87,8 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
         foreach (var apartment in activeApartments)
         {
+            var dueDate = InvoiceHelper.CalculateDueDate(request.Year, request.Month);
+
             var invoice = new Invoice
             {
                 Type = request.Type,
@@ -91,7 +96,8 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
                 Year = request.Year,
                 Month = request.Month,
                 PaymentStatus = false,
-                ApartmentId = apartment.ApartmentId
+                ApartmentId = apartment.ApartmentId,
+                DueDate = dueDate
             };
 
             await unitOfWork.InvoiceRepository.AddInvoiceAsync(invoice);
@@ -148,10 +154,13 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             return ResponseDto<bool?>.Fail("Invoice not found.");
         }
 
+        var dueDate = InvoiceHelper.CalculateDueDate(request.Year, request.Month);
+
         invoice.Amount = request.Amount;
         invoice.Year = request.Year;
         invoice.Month = request.Month;
         invoice.PaymentStatus = request.PaymentStatus;
+        invoice.DueDate = dueDate;
 
         // Fatura güncellemesini veritabanına kaydet.
         var updateResult = await unitOfWork.InvoiceRepository.UpdateInvoiceAsync(invoice);
@@ -183,6 +192,26 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
         return ResponseDto<bool?>.Success(true);
     }
+
+
+    // 
+    public async Task CheckAndApplyLateFees()
+    {
+        var invoices = await unitOfWork.InvoiceRepository.GetAllAsync();
+        var today = DateTime.UtcNow.Date;
+        var invoicesToUpdate = invoices.Where(i => !i.PaymentStatus && i.DueDate < today).ToList();
+
+        foreach (var invoice in invoicesToUpdate)
+        {
+            // %10 ceza uygulayın
+            invoice.Amount += invoice.Amount * 0.10m;
+            await unitOfWork.InvoiceRepository.UpdateInvoiceAsync(invoice);
+        }
+
+        // Değişiklikleri veritabanına kaydedin
+        await unitOfWork.SaveChangesAsync();
+    }
+
 
 
 

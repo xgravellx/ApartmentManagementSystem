@@ -10,6 +10,7 @@ public class Invoice
     public decimal Amount { get; set; }
     public int Year { get; set; }
     public int Month { get; set; }
+    public DateTime DueDate { get; set; }
     public bool PaymentStatus { get; set; } // Ödenip ödenmediğini gösterir
 
     // Foreign Key
