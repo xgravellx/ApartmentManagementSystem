@@ -10,8 +10,8 @@ public interface IApartmentRepository
     Task UpdateAsync(Apartment apartment);
         
     Task DeleteAsync(int apartmentId);
-    Task<bool> IsExistAsync(int apartmentId);
     Task<int> GetApartmentIdsByUserIdAsync(Guid userId);
     Task<List<Apartment>> GetActiveApartmentsByBlock(string block);
     Task<bool> AreApartmentIdsExistAsync(List<int> apartmentIds);
+    //Task<List<Invoice>> GetInvoicesByApartmentIdAsync(int lastYear);
 }

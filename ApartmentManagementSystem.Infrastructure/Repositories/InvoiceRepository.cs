@@ -4,6 +4,7 @@ using ApartmentManagementSystem.Models.Entities;
 using ApartmentManagementSystem.Models.Shared;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using ApartmentManagementSystem.Models.Enums;
 
 namespace ApartmentManagementSystem.Infrastructure.Repositories;
 
@@ -78,6 +79,13 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
         return await context.Invoice.FindAsync(invoiceId);
     }
 
+    public async Task<Invoice?> GetByUserIdAsync(Guid userId)
+    {
+        return await context.Invoice
+            .Include(i => i.Apartment)
+            .FirstOrDefaultAsync(i => i.Apartment.UserId == userId);
+    }
+
     public async Task<bool> UpdateInvoiceAsync(Invoice invoice)
     {
         context.Invoice.Update(invoice);
@@ -90,6 +98,41 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
         context.Invoice.Remove(invoice!);
         return await context.SaveChangesAsync() > 0;
     }
+
+    public async Task<IEnumerable<Invoice>> GetUnpaidAndOverdueInvoicesAsync(DateTime today)
+    {
+        return await context.Invoice
+            .Where(invoice => !invoice.PaymentStatus && invoice.DueDate < today)
+            .ToListAsync();
+    }
+
+    public async Task<bool> IsPaidDuesForMonthAsync(int apartmentId, int year, int month)
+    {
+            return await context.Invoice
+                .AnyAsync(i => i.ApartmentId == apartmentId && 
+                               i.Year == year && 
+                               i.Month == month &&
+                               i.PaymentStatus && 
+                               i.Type == InvoiceType.Dues);
+    }
+
+    public async Task<decimal> GetTotalAmountByApartmentIdAsync(int apartmentId)
+    {
+        return await context.Invoice
+            .Where(i => i.ApartmentId == apartmentId)
+            .SumAsync(i => i.Amount);
+    }
+
+    public async Task<decimal?> GetAmountByInvoiceIdAsync(int invoiceId)
+    {
+        return await context.Invoice
+            .Where(i => i.InvoiceId == invoiceId)
+            .Select(i => i.Amount)
+            .FirstOrDefaultAsync();
+        
+    }
+
+
 
 
 }

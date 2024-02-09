@@ -26,20 +26,20 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
     // apartment id ye göre faturaları getir
     // todo -> optimize etmelisin
-    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(int ApartmentId, string userId, bool isAdmin)
+    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(int apartmentId, string userId, bool isAdmin)
     {
         if (!isAdmin)
         {
             var userIdFindUser = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == userId);
             var userIdByUserId = userIdFindUser!.Id;
-            var apartmentId = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(userIdByUserId);
-            var invoicesByUser = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(apartmentId);
+            var apartmentIdByUser = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(userIdByUserId);
+            var invoicesByUser = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(apartmentIdByUser);
             var invoiceDtoListByUser = mapper.Map<List<InvoiceResponseDto>>(invoicesByUser);
             return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoListByUser);
 
         }
 
-        var invoices = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(ApartmentId);
+        var invoices = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(apartmentId);
         var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices);
         return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList);
 
@@ -194,12 +194,11 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
     }
 
 
-    // 
-    public async Task CheckAndApplyLateFees()
+    // todo: test etmelisin.
+    public async Task CheckAndApplyOverDue()
     {
-        var invoices = await unitOfWork.InvoiceRepository.GetAllAsync();
-        var today = DateTime.UtcNow.Date;
-        var invoicesToUpdate = invoices.Where(i => !i.PaymentStatus && i.DueDate < today).ToList();
+        var today = DateTime.UtcNow.AddHours(3);
+        var invoicesToUpdate = await unitOfWork.InvoiceRepository.GetUnpaidAndOverdueInvoicesAsync(today);
 
         foreach (var invoice in invoicesToUpdate)
         {
@@ -211,7 +210,6 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
         // Değişiklikleri veritabanına kaydedin
         await unitOfWork.SaveChangesAsync();
     }
-
 
 
 

@@ -1,6 +1,7 @@
 ﻿using ApartmentManagementSystem.Infrastructure.Data;
 using ApartmentManagementSystem.Infrastructure.Interfaces;
 using ApartmentManagementSystem.Models.Entities;
+using ApartmentManagementSystem.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApartmentManagementSystem.Infrastructure.Repositories;
@@ -40,11 +41,6 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
         }
     }
 
-    public async Task<bool> IsExistAsync(int apartmentId)
-    {
-        return await context.Apartment.AnyAsync(x => x.ApartmentId == apartmentId);
-    }
-
     public async Task<int> GetApartmentIdsByUserIdAsync(Guid userId)
     {
         return await context.Apartment
@@ -66,5 +62,13 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
             .AnyAsync(a => apartmentIds
             .Contains(a.ApartmentId));
     }
+
+    //public async Task<List<Invoice>> GetInvoicesByApartmentIdAsync(int lastYear)
+    //{
+    //    return await context.Apartment
+    //        .Include(a => a.Invoice)
+    //        .Where(a => a.Invoice.Any(i => i.Year == lastYear && i.Type == InvoiceType.Dues))
+    //        .ToListAsync();
+    //}
 
 }

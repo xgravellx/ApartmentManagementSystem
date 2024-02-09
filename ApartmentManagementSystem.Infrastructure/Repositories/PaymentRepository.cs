@@ -35,5 +35,37 @@ public class PaymentRepository(AppDbContext context) : IPaymentRepository
             .ToListAsync();
     }
 
+    public async Task AddPaymentAsync(Payment payment)
+    {
+        await context.Payment.AddAsync(payment);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<Payment> GetByIdAsync(int paymentId)
+    {
+        return await context.Payment.FindAsync(paymentId);
+    }
+
+    public async Task UpdatePaymentAsync(Payment payment)
+    {
+        context.Payment.Update(payment);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task DeletePaymentAsync(int paymentId)
+    {
+        var payment = await context.Payment.FindAsync(paymentId);
+        context.Payment.Remove(payment);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<Invoice?> GetInvoiceByPaymentIdAsync(int paymentId)
+    {
+        return await context.Payment
+            .Include(p => p.Invoice)
+            .Where(p => p.PaymentId == paymentId)
+            .Select(p => p.Invoice)
+            .FirstOrDefaultAsync();
+    }
 
 }

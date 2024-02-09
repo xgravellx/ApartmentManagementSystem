@@ -12,5 +12,5 @@ public interface IInvoiceService
     Task<ResponseDto<bool?>> CreateDuesInvoice(InvoiceCreateDuesRequestDto request);
     Task<ResponseDto<bool?>> UpdateInvoice(InvoiceUpdateRequestDto request);
     Task<ResponseDto<bool?>> DeleteInvoice(int invoiceId);
-    Task CheckAndApplyLateFees();
+    Task CheckAndApplyOverDue();
 }

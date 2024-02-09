@@ -93,9 +93,14 @@ app.UseHangfireDashboard();
 app.UseHangfireServer();
 
 RecurringJob.AddOrUpdate<IInvoiceService>(
-    "CheckAndApplyLateFees", // Ýþe verilecek benzersiz bir isim
-    service => service.CheckAndApplyLateFees(),
+    "CheckAndApplyOverDue", // Ýþe verilecek benzersiz bir isim
+    service => service.CheckAndApplyOverDue(),
     "0 0 * * *"); // CRON ifadesi: Her gün gece yarýsýnda
+
+//RecurringJob.AddOrUpdate<IApartmentService>(
+//       "UpdateRegularStatusForUsers",
+//       service => service.UpdateRegularStatusForUsers(),
+//       Cron.Yearly); // CRON ifadesi: Her sene 1 Ocak'ta)
 
 app.UseHttpsRedirection();
 

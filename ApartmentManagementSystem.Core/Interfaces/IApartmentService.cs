@@ -12,4 +12,5 @@ public interface IApartmentService
     Task<ResponseDto<bool?>> UpdateApartment(ApartmentUpdateRequestDto request);
     Task<ResponseDto<bool?>> DeleteApartment(int apartmentId);
     Task<ResponseDto<bool?>> AssignUserToApartment(ApartmentAssignUserToRequestDto request);
+    Task UpdateRegularStatusForUsers();
 }

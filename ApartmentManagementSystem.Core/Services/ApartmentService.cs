@@ -2,9 +2,11 @@
 using ApartmentManagementSystem.Core.Interfaces;
 using ApartmentManagementSystem.Infrastructure.Interfaces;
 using ApartmentManagementSystem.Models.Entities;
+using ApartmentManagementSystem.Models.Enums;
 using ApartmentManagementSystem.Models.Shared;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApartmentManagementSystem.Core.Services;
 
@@ -79,6 +81,44 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
         apartment.UserId = request.UserId;
         await unitOfWork.ApartmentRepository.UpdateAsync(apartment);
         return ResponseDto<bool?>.Success(true);
+    }
+
+
+    public async Task UpdateRegularStatusForUsers()
+    {
+        //var lastYear = DateTime.UtcNow.Year - 1;
+
+        //// Kullanıcıları ve onlara ait daireleri ve faturaları yükleyin
+        //var apartmentsWithInvoices = await unitOfWork.ApartmentRepository.GetInvoicesByApartmentIdAsync(lastYear);
+
+        //// Her daire için, kullanıcıya ait önceki yıl içindeki tüm aidat faturalarını kontrol edin
+        //foreach (var apartment in apartmentsWithInvoices)
+        //{
+        //    var isRegularPayer = true;
+
+        //    // Önceki yıl için her ay, ödeme durumunu kontrol edin
+        //    for (int month = 1; month <= 12; month++)
+        //    {
+        //        var paidInvoiceForMonth = await unitOfWork.InvoiceRepository.IsPaidDuesForMonthAsync(apartment.ApartmentId, lastYear, month);
+
+        //        if (!paidInvoiceForMonth)
+        //        {
+        //            isRegularPayer = false;
+        //            break;
+        //        }
+        //    }
+
+        //    // İlişkili kullanıcının Regular durumunu güncelleyin
+        //    var user = await userManager.FindByIdAsync(apartment.UserId.ToString());
+        //    if (user != null)
+        //    {
+        //        user.Regular = isRegularPayer;
+        //        await userManager.UpdateAsync(user);
+        //    }
+        //}
+
+        //await unitOfWork.SaveChangesAsync();
+
     }
 
 }

@@ -1,13 +1,16 @@
 ﻿using ApartmentManagementSystem.Core.DTOs.UserDto;
 using ApartmentManagementSystem.Core.Interfaces;
+using ApartmentManagementSystem.Infrastructure.Interfaces;
 using ApartmentManagementSystem.Models.Entities;
+using ApartmentManagementSystem.Models.Enums;
 using ApartmentManagementSystem.Models.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ApartmentManagementSystem.Core.Services;
 
-public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager) : IUserService
+public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IUnitOfWork unitOfWork) : IUserService
 {
     public async Task<ResponseDto<List<UserGetAllResponseDto>>> GetAll()
     {
@@ -161,7 +164,6 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
 
         return ResponseDto<bool>.Success(true);
     }
-
 
 
 }

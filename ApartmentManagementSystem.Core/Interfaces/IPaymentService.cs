@@ -9,4 +9,7 @@ public interface IPaymentService
     Task<ResponseDto<List<PaymentGetAllResponseDto>>> GetAllPayments();
     Task<ResponseDto<List<PaymentGetByApartmentIdResponseDto>>> GetPaymentsByApartmentId(int apartmentId);
     Task<ResponseDto<List<User>>> GetRegularPaymentUsers(PaymentRegularRequestDto request);
+    Task<ResponseDto<int>> CreatePayment(PaymentCreateRequestDto request, bool isAdmin);
+    Task<ResponseDto<bool>> UpdatePayment(PaymentUpdateRequestDto request);
+    Task<ResponseDto<bool>> DeletePayment(int paymentId);
 }
