@@ -7,10 +7,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ApartmentManagementSystem.Core.Services;
 
-// Signin manager kullanılabilir. - Admin için şifremi değiştirmek içinde service yaz
 public class AuthService(UserManager<User> userManager, SignInManager<User> signInManager, TokenGeneratorHelper tokenGeneratorHelper) : IAuthService
 {
-    public async Task<ResponseDto<string?>> AdminLoginAsync(AuthAdminRequestDto request)
+    public async Task<ResponseDto<string?>> AdminLogin(AuthAdminRequestDto request)
     {
         var hasAdmin = await userManager.FindByNameAsync(request.UserName);
         if (hasAdmin == null)
@@ -19,6 +18,7 @@ public class AuthService(UserManager<User> userManager, SignInManager<User> sign
         }
 
         var checkPassword = await userManager.CheckPasswordAsync(hasAdmin, request.Password);
+
         if (!checkPassword)
         {
             return ResponseDto<string?>.Fail("Username or password is wrong");
@@ -28,7 +28,7 @@ public class AuthService(UserManager<User> userManager, SignInManager<User> sign
         return ResponseDto<string?>.Success(token);
     }
 
-    public async Task<ResponseDto<string?>> UserLoginAsync(AuthUserRequestDto request)
+    public async Task<ResponseDto<string?>> UserLogin(AuthUserRequestDto request)
     {
         var user = userManager.Users.FirstOrDefault(u => u.IdentityNumber == request.IdentityNumber && u.PhoneNumber == request.PhoneNumber);
 
@@ -41,7 +41,7 @@ public class AuthService(UserManager<User> userManager, SignInManager<User> sign
         return ResponseDto<string?>.Success(token);
     }
 
-    public async Task<ResponseDto<bool>> LogoutAsync()
+    public async Task<ResponseDto<bool>> Logout()
     {
         await signInManager.SignOutAsync();
         return ResponseDto<bool>.Success(true);

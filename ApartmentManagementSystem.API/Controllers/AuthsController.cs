@@ -12,7 +12,7 @@ namespace ApartmentManagementSystem.API.Controllers
         [HttpPost("admin-login")]
         public async Task<IActionResult> AdminLogin(AuthAdminRequestDto request)
         {
-            var response = await authService.AdminLoginAsync(request);
+            var response = await authService.AdminLogin(request);
             if (response.AnyError)
             {
                 return BadRequest(response.Errors);
@@ -23,7 +23,7 @@ namespace ApartmentManagementSystem.API.Controllers
         [HttpPost("user-login")]
         public async Task<IActionResult> UserLogin(AuthUserRequestDto request)
         {
-            var response = await authService.UserLoginAsync(request);
+            var response = await authService.UserLogin(request);
             if (response.AnyError)
             {
                 return BadRequest(response.Errors);
@@ -34,7 +34,7 @@ namespace ApartmentManagementSystem.API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var response = await authService.LogoutAsync();
+            var response = await authService.Logout();
             if (response.AnyError)
             {
                 return BadRequest(response);
