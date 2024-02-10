@@ -37,7 +37,7 @@ namespace ApartmentManagementSystem.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateApartment(ApartmentCreateRequestDto request)
         {
-            var response = await apartmentService.Create(request);
+            var response = await apartmentService.CreateApartment(request);
             if (response.AnyError)
             {
                 return BadRequest(response.Errors);

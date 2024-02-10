@@ -14,4 +14,5 @@ public interface IApartmentRepository
     Task<List<Apartment>> GetActiveApartmentsByBlockAsync(string block);
     Task<bool> AreApartmentIdsExistAsync(List<int> apartmentIds);
     //Task<List<Invoice>> GetInvoicesByApartmentIdAsync(int lastYear);
+    Task<bool> CheckApartmentFloorAndNumberExistAsync(int floor, int number);
 }

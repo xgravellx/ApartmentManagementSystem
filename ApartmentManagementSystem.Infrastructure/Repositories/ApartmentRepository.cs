@@ -67,4 +67,15 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
             .Contains(a.ApartmentId));
     }
 
+    //public async Task<bool> IsApartmentExistAsync(int apartmentId)
+    //{
+    //    return await context.Apartment
+    //        .AnyAsync(a => a.ApartmentId == apartmentId);
+    //}
+
+    public async Task<bool> CheckApartmentFloorAndNumberExistAsync(int floor, int number)
+    {
+        return await context.Apartment
+            .AnyAsync(a => a.Floor == floor && a.Number == number);
+    }
 }

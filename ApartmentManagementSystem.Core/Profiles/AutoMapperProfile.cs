@@ -18,8 +18,8 @@ public class AutoMapperProfile : Profile
 
         // Apartment için mapping konfigürasyonu
         CreateMap<Apartment, ApartmentResponseDto>();
-        CreateMap<Apartment, ApartmentCreateRequestDto>();
-        CreateMap<Apartment, ApartmentUpdateRequestDto>();
+        CreateMap<Apartment, ApartmentCreateRequestDto>().ReverseMap();
+        CreateMap<Apartment, ApartmentUpdateRequestDto>().ReverseMap();
         CreateMap<Apartment, ApartmentAssignUserRequestDto>().ReverseMap();
 
         // Invoice için mapping konfigürasyonu

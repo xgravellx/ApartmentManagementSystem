@@ -36,6 +36,12 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
 
     public async Task<ResponseDto<int?>> CreateApartment(ApartmentCreateRequestDto request)
     {
+        var apartmentExists = await unitOfWork.ApartmentRepository.CheckApartmentFloorAndNumberExistAsync(request.Floor, request.Number);
+        if (apartmentExists)
+        {
+            return ResponseDto<int?>.Fail("An apartment with the specified floor and number already exists.");
+        }
+
         var apartment = mapper.Map<Apartment>(request); // yeni bir nesne oluşturup kaynak nesnedeki verilerle doldurmak için kullanılır
         await unitOfWork.ApartmentRepository.AddAsync(apartment);
 
@@ -49,6 +55,12 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
         if (apartment == null)
         {
             return ResponseDto<bool?>.Fail("Apartment is not found.");
+        }
+
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        if (user == null)
+        {
+            return ResponseDto<bool?>.Fail("User is not found.");
         }
 
         mapper.Map(request, apartment); // var olan bir nesnenin verilerini başka bir nesneye kopyalamak için kullanılır
