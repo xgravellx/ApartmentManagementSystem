@@ -6,6 +6,8 @@ namespace ApartmentManagementSystem.Infrastructure.Interfaces;
 public interface IPaymentRepository
 {
     Task<List<Payment>> GetAllAsync();
+    Task<List<Payment>> GetPaymentsByUserIdAsync(string userId);
+    Task<List<Payment>> GetByInvoiceIdAsync(int invoiceId);
     Task<List<Payment>> GetByApartmentIdAsync(int apartmentId);
     Task<List<Guid>> GetUserIdsWithRegularPayments(int month, int year);
     Task AddPaymentAsync(Payment payment);

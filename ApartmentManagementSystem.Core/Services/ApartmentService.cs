@@ -24,14 +24,15 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
         return ResponseDto<IEnumerable<ApartmentResponseDto>>.Success(apartmentList);
     }
 
-    public async Task<ResponseDto<Apartment>> GetById(int apartmentId)
+    public async Task<ResponseDto<ApartmentResponseDto>> GetById(int apartmentId)
     {
         var apartment = await unitOfWork.ApartmentRepository.GetByIdAsync(apartmentId);
         if (apartment == null)
         {
-            return ResponseDto<Apartment>.Fail("Apartment is not found.");
+            return ResponseDto<ApartmentResponseDto>.Fail("Apartment is not found.");
         }
-        return ResponseDto<Apartment>.Success(apartment);
+        var apartmentList = mapper.Map<ApartmentResponseDto>(apartment);
+        return ResponseDto<ApartmentResponseDto>.Success(apartmentList);
     }
 
     public async Task<ResponseDto<int?>> CreateApartment(ApartmentCreateRequestDto request)
@@ -42,6 +43,12 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
             return ResponseDto<int?>.Fail("An apartment with the specified floor and number already exists.");
         }
 
+        var isAssigned = await userManager.Users.AnyAsync(user => user.ApartmentId == null);
+        if (isAssigned)
+        {
+            return ResponseDto<int?>.Fail("There is no user to assign to the apartment.");
+        }
+   
         var apartment = mapper.Map<Apartment>(request); // yeni bir nesne oluşturup kaynak nesnedeki verilerle doldurmak için kullanılır
         await unitOfWork.ApartmentRepository.AddAsync(apartment);
 
@@ -62,6 +69,13 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
         {
             return ResponseDto<bool?>.Fail("User is not found.");
         }
+
+        var isAssigned = await unitOfWork.ApartmentRepository.IsUserIdAssignedToAnotherApartment(request.ApartmentId, request.UserId.ToString());
+        if (isAssigned)
+        {
+            return ResponseDto<bool?>.Fail("This user is assigned to another apartment.");
+        }
+
 
         mapper.Map(request, apartment); // var olan bir nesnenin verilerini başka bir nesneye kopyalamak için kullanılır
         await unitOfWork.ApartmentRepository.UpdateAsync(apartment);
@@ -103,6 +117,7 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
         }
 
         apartment.UserId = request.UserId;
+        apartment.Status = true;
 
         await unitOfWork.ApartmentRepository.UpdateAsync(apartment);
         return ResponseDto<bool?>.Success(true);

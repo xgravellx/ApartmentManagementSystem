@@ -25,18 +25,12 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
     }
 
     // apartment id ye göre faturaları getir
-    // todo -> optimize etmelisin
-    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(int apartmentId, string userId, bool isAdmin)
+    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(int apartmentId, string identityNumber, bool isAdmin)
     {
-        if (!isAdmin)
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == identityNumber);
+        if (user == null && !isAdmin)
         {
-            var userIdFindUser = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == userId);
-            var userIdByUserId = userIdFindUser!.Id;
-            var apartmentIdByUser = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(userIdByUserId);
-            var invoicesByUser = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(apartmentIdByUser);
-            var invoiceDtoListByUser = mapper.Map<List<InvoiceResponseDto>>(invoicesByUser);
-            return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoListByUser);
-
+            return ResponseDto<List<InvoiceResponseDto>>.Fail("Apartment not found.");
         }
 
         var invoices = await unitOfWork.InvoiceRepository.GetByApartmentIdAsync(apartmentId);
@@ -45,41 +39,68 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
     }
 
-    // filtrelenmiş fatura listesi 
-    // todo: ödenmişse fatura bilgilerini de gönder
-    public async Task<ResponseDto<List<InvoiceResponseDto>>> GetFiltered(InvoiceFilterRequestDto request, string userId, bool isAdmin)
+    // user -> ay, yıl ve ödeme durumuna göre fatura listesi
+    // admin -> blok, , uaparmentsser, ay, yıl ve ödeme durumuna göre fatura listesi
+    public async Task<ResponseDto<InvoiceFilterResponseDto>> GetFiltered(InvoiceFilterRequestDto request, string identityNumber, bool isAdmin)
     {
-        if (!isAdmin)
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == identityNumber);
+        if (!isAdmin && user != null)
         {
-            var userIdFindUser = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == userId);
-            var userIdByUserId = userIdFindUser!.Id;
-            var apartmentId = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(userIdByUserId);
+            var apartmentId = await unitOfWork.ApartmentRepository.GetApartmentIdByUserIdAsync(user!.Id);
             request.ApartmentIds = [apartmentId];
-            request.UserIds = [userIdByUserId];
+            request.UserIds = [user.Id];
+
+            if (user == null) return ResponseDto<InvoiceFilterResponseDto>.Fail("User not found");
         }
 
         var invoices = await unitOfWork.InvoiceRepository.GetFilteredAsync(request);
+        decimal totalAmount = invoices.Sum(invoice => invoice.PayableAmount);
         var invoiceDtoList = mapper.Map<List<InvoiceResponseDto>>(invoices);
-        return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList);
+
+        var result = new InvoiceFilterResponseDto
+        {
+            TotalAmount = totalAmount,
+            Invoices = invoiceDtoList
+        };
+
+
+        return ResponseDto<InvoiceFilterResponseDto>.Success(result);
     }
 
-    // block a göre genel fatura oluşturma 
-    public async Task<ResponseDto<bool?>> CreateGeneralInvoice(InvoiceCreateGeneralRequestDto request)
+    public async Task<ResponseDto<decimal>> GetDebtFilter(InvoiceDebtFilterRequestDto request)
+    {
+        var invoices = await unitOfWork.InvoiceRepository.GetTotalDebtAsync(request.ApartmentId, request.Year, request.Month);
+
+        if (invoices == null)
+        {
+            return ResponseDto<decimal>.Fail("No invoices found.");
+        }
+
+        return ResponseDto<decimal>.Success(invoices);
+    }
+
+    public async Task<ResponseDto<bool>> CreateGeneralInvoice(InvoiceCreateGeneralRequestDto request)
     {
         if (!Enum.IsDefined(typeof(InvoiceType), request.Type))
         {
-            return ResponseDto<bool?>.Fail("Invalid invoice type.");
+            return ResponseDto<bool>.Fail("Invalid invoice type.");
         }
 
         if (request.Type == InvoiceType.Dues)
         {
-            return ResponseDto<bool?>.Fail("You can create dues for each apartment.");
+            return ResponseDto<bool>.Fail("You can create dues for each apartment.");
         }
 
         var activeApartments = await unitOfWork.ApartmentRepository.GetActiveApartmentsByBlockAsync(request.Block);
         if (!activeApartments.Any())
         {
-            return ResponseDto<bool?>.Fail("No active apartments found for the block.");
+            return ResponseDto<bool>.Fail("No active apartments found for the block.");
+        }
+
+        var isValidationMonthAndYear = DateHelper.IsValidMonth(request.Month) && DateHelper.IsValidYear(request.Year);
+        if (!isValidationMonthAndYear)
+        {
+            return ResponseDto<bool>.Fail("Invalid month or year.");
         }
 
         var totalApartments = activeApartments.Count;
@@ -87,12 +108,13 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
         foreach (var apartment in activeApartments)
         {
-            var dueDate = InvoiceHelper.CalculateDueDate(request.Year, request.Month);
+            var dueDate = DateHelper.CalculateDueDate(request.Year, request.Month);
 
             var invoice = new Invoice
             {
                 Type = request.Type,
                 Amount = amountPerApartment,
+                PayableAmount = amountPerApartment,
                 Year = request.Year,
                 Month = request.Month,
                 PaymentStatus = false,
@@ -103,21 +125,26 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             await unitOfWork.InvoiceRepository.AddInvoiceAsync(invoice);
         }
 
-        return ResponseDto<bool?>.Success(true);
+        return ResponseDto<bool>.Success(true);
     }
 
-    // 	Daire başına ödenmesi gereken aidat bilgilerini toplu olarak veya tek tek  dairelere atama yaparak gerçekleştirebilir. 
-    public async Task<ResponseDto<bool?>> CreateDuesInvoice(InvoiceCreateDuesRequestDto request)
+    public async Task<ResponseDto<bool>> CreateDuesInvoice(InvoiceCreateDuesRequestDto request)
     {
         if (request.Type != InvoiceType.Dues)
         {
-            return ResponseDto<bool?>.Fail("Only dues can be added according to the apartment.");
+            return ResponseDto<bool>.Fail("Only dues can be added according to the apartment.");
         }
 
-        var apartment = await unitOfWork.ApartmentRepository.AreApartmentIdsExistAsync(request.ApartmentIds!);
+        var apartment = await unitOfWork.ApartmentRepository.AreAllApartmentsActiveAsync(request.ApartmentIds!);
         if (!apartment)
         {
-            return ResponseDto<bool?>.Fail("Apartments not found.");
+            return ResponseDto<bool>.Fail("One or more apartments are either not found or not active.");
+        }
+
+        var isValidationMonthAndYear = DateHelper.IsValidMonth(request.Month) && DateHelper.IsValidYear(request.Year);
+        if (!isValidationMonthAndYear)
+        {
+            return ResponseDto<bool>.Fail("Invalid month or year.");
         }
 
         foreach (var apartmentId in request.ApartmentIds!)
@@ -126,64 +153,61 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             {
                 Type = request.Type,
                 Amount = request.Amount,
+                PayableAmount = request.Amount,
                 Year = request.Year,
                 Month = request.Month,
                 PaymentStatus = false,
-                ApartmentId = apartmentId
+                ApartmentId = apartmentId,
             };
 
             await unitOfWork.InvoiceRepository.AddInvoiceAsync(invoice);
         }
-        
-        return ResponseDto<bool?>.Success(true);
+
+        return ResponseDto<bool>.Success(true);
+
     }
 
-    // block a göre genel fatura güncelleme 
-    public async Task<ResponseDto<bool?>> UpdateInvoice(InvoiceUpdateRequestDto request)
+    public async Task<ResponseDto<bool>> UpdateInvoice(InvoiceUpdateRequestDto request)
     {
         if (!Enum.IsDefined(typeof(InvoiceType), request.Type))
         {
-            return ResponseDto<bool?>.Fail("Invalid invoice type.");
+            return ResponseDto<bool>.Fail("Invalid invoice type.");
         }
 
         var invoice = await unitOfWork.InvoiceRepository.GetByIdAsync(request.InvoiceId);
 
-        // Fatura bulunamazsa hata dön.
         if (invoice == null)
         {
-            return ResponseDto<bool?>.Fail("Invoice not found.");
+            return ResponseDto<bool>.Fail("Invoice not found.");
         }
 
-        var dueDate = InvoiceHelper.CalculateDueDate(request.Year, request.Month);
+        var dueDate = DateHelper.CalculateDueDate(request.Year, request.Month);
 
         invoice.Amount = request.Amount;
+        invoice.PayableAmount = request.Amount;
         invoice.Year = request.Year;
         invoice.Month = request.Month;
         invoice.PaymentStatus = request.PaymentStatus;
         invoice.DueDate = dueDate;
 
-        // Fatura güncellemesini veritabanına kaydet.
         var updateResult = await unitOfWork.InvoiceRepository.UpdateInvoiceAsync(invoice);
         if (!updateResult)
         {
-            return ResponseDto<bool?>.Fail("Unable to update invoice.");
+            return ResponseDto<bool>.Fail("Unable to update invoice.");
         }
 
-        return ResponseDto<bool?>.Success(true);
+        return ResponseDto<bool>.Success(true);
     }
 
-    // fatura silme
     public async Task<ResponseDto<bool?>> DeleteInvoice(int invoiceId)
     {
         var invoice = await unitOfWork.InvoiceRepository.GetByIdAsync(invoiceId);
 
-        // Fatura bulunamazsa hata dön.
         if (invoice == null)
         {
             return ResponseDto<bool?>.Fail("Invoice not found.");
         }
 
-        // Fatura silme işlemini gerçekleştir.
         var deleteResult = await unitOfWork.InvoiceRepository.DeleteInvoiceAsync(invoiceId);
         if (!deleteResult)
         {
@@ -210,9 +234,5 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
         // Değişiklikleri veritabanına kaydedin
         await unitOfWork.SaveChangesAsync();
     }
-
-
-
-    // fatura atama işlemleri
 
 }

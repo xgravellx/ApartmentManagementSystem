@@ -1,5 +1,7 @@
 ﻿using ApartmentManagementSystem.Core.DTOs.UserDto;
 using ApartmentManagementSystem.Core.Interfaces;
+using ApartmentManagementSystem.Infrastructure.Interfaces;
+using ApartmentManagementSystem.Infrastructure.Repositories;
 using ApartmentManagementSystem.Models.Entities;
 using ApartmentManagementSystem.Models.Shared;
 using AutoMapper;
@@ -8,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApartmentManagementSystem.Core.Services;
 
-public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IMapper mapper) : IUserService
+public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager, IMapper mapper, IUnitOfWork unitOfWork) : IUserService
 {
     public async Task<ResponseDto<List<UserResponseDto>>> GetAll()
     {
@@ -106,6 +108,16 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
         }
 
         await userManager.DeleteAsync(user);
+
+        var apartments = await unitOfWork.ApartmentRepository.FindByUserIdAsync(userId); // Bu metodu ApartmentRepository'ye eklemeniz gerekebilir
+
+        foreach (var apartment in apartments)
+        {
+            apartment.UserId = null;
+            apartment.Status = false;
+            await unitOfWork.ApartmentRepository.UpdateAsync(apartment);
+        }
+
 
         return ResponseDto<bool>.Success(true);
     }

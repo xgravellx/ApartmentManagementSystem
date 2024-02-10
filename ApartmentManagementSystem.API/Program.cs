@@ -41,7 +41,7 @@ builder.Services.AddIdentity<User, Role>( options =>
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 builder.Services.AddScoped<TokenGeneratorHelper>();
-builder.Services.AddScoped<InvoiceHelper>();
+builder.Services.AddScoped<DateHelper>();
 
 builder.Services.AddHostedService<RolesInitialization>();
 builder.Services.AddScoped<IAuthService, AuthService>();

@@ -10,15 +10,21 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
 {
     public async Task<IEnumerable<Apartment?>> GetAllAsync()
     {
-        return await context.Apartment.ToListAsync();
+        return await context.Apartment
+            .Include(apartment => apartment.Invoice)
+            .Include(apartment => apartment.User)
+            .ToListAsync();
     }
 
     public async Task<Apartment?> GetByIdAsync(int apartmentId)
     {
-        return await context.Apartment.FindAsync(apartmentId);
+        return await context.Apartment
+            .Include(apartment => apartment.Invoice) 
+            .Include(apartment => apartment.User)
+            .FirstOrDefaultAsync(apartment => apartment.ApartmentId == apartmentId);
     }
 
-    public async Task AddAsync(Apartment apartment)
+public async Task AddAsync(Apartment apartment)
     {
         await context.Apartment.AddAsync(apartment);
         await context.SaveChangesAsync();
@@ -45,7 +51,7 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
         return await context.Apartment.AnyAsync(a => a.UserId == userId);
     }
 
-    public async Task<int> GetApartmentIdsByUserIdAsync(Guid userId)
+    public async Task<int> GetApartmentIdByUserIdAsync(Guid userId)
     {
         return await context.Apartment
             .Where(a => a.UserId == userId)
@@ -56,7 +62,7 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
     public async Task<List<Apartment>> GetActiveApartmentsByBlockAsync(string block)
     {
         return await context.Apartment
-            .Where(a => a.Block == block && a.Status == true)
+            .Where(a => a.Block == block && a.Status == true && a.UserId != null)
             .ToListAsync();
     }
 
@@ -67,15 +73,30 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
             .Contains(a.ApartmentId));
     }
 
-    //public async Task<bool> IsApartmentExistAsync(int apartmentId)
-    //{
-    //    return await context.Apartment
-    //        .AnyAsync(a => a.ApartmentId == apartmentId);
-    //}
-
     public async Task<bool> CheckApartmentFloorAndNumberExistAsync(int floor, int number)
     {
         return await context.Apartment
             .AnyAsync(a => a.Floor == floor && a.Number == number);
     }
+
+    public async Task<bool> AreAllApartmentsActiveAsync(List<int> apartmentIds)
+    {
+        return await context.Apartment
+            .Where(a => apartmentIds.Contains(a.ApartmentId))
+            .AllAsync(a => a.Status);
+    }
+
+    public async Task<bool> IsUserIdAssignedToAnotherApartment(int apartmentId, string userId)
+    {
+        return await context.Apartment
+            .AnyAsync(a => a.UserId.ToString() == userId && a.ApartmentId != apartmentId);
+    }
+
+    public async Task<List<Apartment>> FindByUserIdAsync(Guid userId)
+    {
+        return await context.Apartment
+            .Where(a => a.UserId == userId)
+            .ToListAsync();
+    }
+
 }

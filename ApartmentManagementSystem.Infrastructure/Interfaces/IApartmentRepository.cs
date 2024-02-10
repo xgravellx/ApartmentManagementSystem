@@ -10,9 +10,11 @@ public interface IApartmentRepository
     Task UpdateAsync(Apartment apartment);
     Task DeleteAsync(int apartmentId);
     Task<bool> IsUserAssignedToAnyApartmentAsync(Guid userId);
-    Task<int> GetApartmentIdsByUserIdAsync(Guid userId);
+    Task<int> GetApartmentIdByUserIdAsync(Guid userId);
     Task<List<Apartment>> GetActiveApartmentsByBlockAsync(string block);
     Task<bool> AreApartmentIdsExistAsync(List<int> apartmentIds);
-    //Task<List<Invoice>> GetInvoicesByApartmentIdAsync(int lastYear);
     Task<bool> CheckApartmentFloorAndNumberExistAsync(int floor, int number);
+    Task<bool> AreAllApartmentsActiveAsync(List<int> apartmentIds);
+    Task<bool> IsUserIdAssignedToAnotherApartment(int apartmentId, string userId);
+    Task<List<Apartment>> FindByUserIdAsync(Guid userId);
 }

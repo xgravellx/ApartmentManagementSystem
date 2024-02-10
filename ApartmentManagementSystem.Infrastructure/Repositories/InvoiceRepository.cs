@@ -33,7 +33,6 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
                 .Contains(i.ApartmentId));
         }
 
-        // Aylar kontrolü
         if (request.Months != null && request.Months.Any())
         {
             query = query
@@ -41,7 +40,6 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
                 .Contains(i.Month));
         }
 
-        // Yıllar kontrolü
         if (request.Years != null && request.Years.Any())
         {
             query = query
@@ -49,7 +47,6 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
                 .Contains(i.Year));
         }
 
-        // Kullanıcı ID'leri kontrolü
         if (request.UserIds != null && request.UserIds.Any())
         {
             query = query
@@ -57,7 +54,6 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
                 .Contains(i.Apartment.UserId.Value));
         }
 
-        // Ödeme durumu kontrolü
         if (request.PaymentStatus.HasValue)
         {
             query = query
@@ -129,10 +125,33 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
             .Where(i => i.InvoiceId == invoiceId)
             .Select(i => i.Amount)
             .FirstOrDefaultAsync();
-        
     }
 
+    public async Task<bool> GetPaidAmountAsync(int incoiceId)
+    {
+        return await context.Invoice
+            .Where(i => i.InvoiceId == incoiceId)
+            .Select(i => i.PaymentStatus)
+            .FirstOrDefaultAsync();
+    }
 
+    public async Task<decimal> GetTotalDebtAsync(int apartmentId, int? year, int? month)
+    {
+        var query = context.Invoice.AsQueryable();
 
+        query = query.Where(i => i.ApartmentId == apartmentId);
+
+        if (year.HasValue)
+        {
+            query = query.Where(i => i.Year == year.Value);
+        }
+
+        if (month.HasValue)
+        {
+            query = query.Where(i => i.Month == month.Value);
+        }
+
+        return await query.SumAsync(i => i.PayableAmount);
+    }
 
 }

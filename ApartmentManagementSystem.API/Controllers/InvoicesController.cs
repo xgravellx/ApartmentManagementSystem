@@ -42,12 +42,24 @@ namespace ApartmentManagementSystem.API.Controllers
         }
 
         [Authorize(Roles = "User, Admin")]
-        [HttpGet("filter")]
+        [HttpPost("filter")]
         public async Task<IActionResult> GetFiltered(InvoiceFilterRequestDto request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isAdmin = User.IsInRole("Admin");
             var response = await invoiceService.GetFiltered(request, userId, isAdmin);
+            if (response.AnyError)
+            {
+                return NotFound(response.Errors);
+            }
+            return Ok(response.Data);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("debt-filter")]
+        public async Task<IActionResult> GetDebtFiltered(InvoiceDebtFilterRequestDto request)
+        {
+            var response = await invoiceService.GetDebtFilter(request);
             if (response.AnyError)
             {
                 return NotFound(response.Errors);

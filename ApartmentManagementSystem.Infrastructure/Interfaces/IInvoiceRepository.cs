@@ -19,5 +19,5 @@ public interface IInvoiceRepository
     Task<bool> IsPaidDuesForMonthAsync(int apartmentId, int year, int month);
     Task<decimal> GetTotalAmountByApartmentIdAsync(int apartmentId);
     Task<decimal?> GetAmountByInvoiceIdAsync(int invoiceId);
-
+    Task<decimal> GetTotalDebtAsync(int aparmentId, int? year, int? month);
 }

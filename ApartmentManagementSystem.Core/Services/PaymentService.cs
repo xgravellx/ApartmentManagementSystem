@@ -19,7 +19,6 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
     public async Task<ResponseDto<List<PaymentGetAllResponseDto>>> GetAllPayments()
     {
         var payments = await unitOfWork.PaymentRepository.GetAllAsync();
-
         var paymentDtoList = mapper.Map<List<PaymentGetAllResponseDto>>(payments);
         return ResponseDto<List<PaymentGetAllResponseDto>>.Success(paymentDtoList);
     }
@@ -27,35 +26,8 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
     public async Task<ResponseDto<List<PaymentGetByApartmentIdResponseDto>>> GetPaymentsByApartmentId(int apartmentId)
     {
         var payments = await unitOfWork.PaymentRepository.GetByApartmentIdAsync(apartmentId);
-
         var paymentDtoList = mapper.Map<List<PaymentGetByApartmentIdResponseDto>>(payments);
         return ResponseDto<List<PaymentGetByApartmentIdResponseDto>>.Success(paymentDtoList);
-    }
-
-    // düzenli ödeme yapan ya da yapmayan kullanıcıları getir
-    // todo: kontrol et
-    public async Task<ResponseDto<List<User>>> GetRegularPaymentUsers(PaymentRegularRequestDto request)
-    {
-        if (request.Month is < 1 or > 12)
-        {
-            return ResponseDto<List<User>>.Fail("Month must be between 1 and 12.");
-        }
-
-        var userIds = await unitOfWork.PaymentRepository.GetUserIdsWithRegularPayments(request.Month, request.Year);
-
-        var users = new List<User>();
-
-        foreach (var userId in userIds)
-        {
-            var user = await userManager.FindByIdAsync(userId.ToString());
-            if (user != null)
-            {
-                users.Add(user);
-            }
-        }
-
-        return ResponseDto<List<User>>.Success(users ?? []);
-
     }
 
     public async Task<ResponseDto<int>> CreatePayment(PaymentCreateRequestDto request, bool isAdmin)
@@ -72,13 +44,12 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             return ResponseDto<int>.Fail("Invoice not found.");
         }
 
-        var apartmentId = await unitOfWork.ApartmentRepository.GetApartmentIdsByUserIdAsync(request.UserId);
         if (!isAdmin && invoice.ApartmentId != request.ApartmentId)
         {
             return ResponseDto<int>.Fail("Access denied. Users can only access their own invoices.");
         }
 
-        if (invoice.Amount < request.Amount || invoice.Amount > request.Amount)
+        if (invoice.PayableAmount < request.Amount || invoice.PayableAmount > request.Amount)
         {
             return ResponseDto<int>.Fail("Invalid amount.");
         }
@@ -98,6 +69,7 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
         await unitOfWork.PaymentRepository.AddPaymentAsync(payment);
 
         invoice.PaymentStatus = true;
+        invoice.PayableAmount = 0;
         await unitOfWork.InvoiceRepository.UpdateInvoiceAsync(invoice);
 
         return ResponseDto<int>.Success(payment.PaymentId);
@@ -142,6 +114,31 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
         return ResponseDto<bool>.Success(true);
     }
 
+    // düzenli ödeme yapan ya da yapmayan kullanıcıları getir
+    // todo: kontrol et
+    public async Task<ResponseDto<List<User>>> GetRegularPaymentUsers(PaymentRegularRequestDto request)
+    {
+        if (request.Month is < 1 or > 12)
+        {
+            return ResponseDto<List<User>>.Fail("Month must be between 1 and 12.");
+        }
+
+        var userIds = await unitOfWork.PaymentRepository.GetUserIdsWithRegularPayments(request.Month, request.Year);
+
+        var users = new List<User>();
+
+        foreach (var userId in userIds)
+        {
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            if (user != null)
+            {
+                users.Add(user);
+            }
+        }
+
+        return ResponseDto<List<User>>.Success(users ?? []);
+
+    }
 
     // GetLastPaymentByApartmentId
     // kullanıcı için ödeme sistemi

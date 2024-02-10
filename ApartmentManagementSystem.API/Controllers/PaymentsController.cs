@@ -3,6 +3,7 @@ using ApartmentManagementSystem.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ApartmentManagementSystem.API.Controllers
 {
@@ -10,6 +11,7 @@ namespace ApartmentManagementSystem.API.Controllers
     [ApiController]
     public class PaymentsController(IPaymentService paymentService) : ControllerBase
     {
+
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()

@@ -23,14 +23,15 @@ public class AutoMapperProfile : Profile
         CreateMap<Apartment, ApartmentAssignUserRequestDto>().ReverseMap();
 
         // Invoice için mapping konfigürasyonu
-        CreateMap<Invoice, InvoiceResponseDto>().ReverseMap();
+        CreateMap<Invoice, InvoiceResponseDto>();
         CreateMap<Invoice, InvoiceByApartmentIdRequestDto>().ReverseMap();
         CreateMap<Invoice, InvoiceFilterRequestDto>().ReverseMap();
+        CreateMap<Invoice, InvoiceDebtFilterRequestDto>().ReverseMap();
         CreateMap<Invoice, InvoiceCreateGeneralRequestDto>().ReverseMap(); 
         CreateMap<Invoice, InvoiceUpdateRequestDto>().ReverseMap();
 
         // Payment için mapping konfigürasyonu
-        CreateMap<Payment, PaymentGetAllResponseDto>().ReverseMap();
+        CreateMap<Payment, PaymentGetAllResponseDto>();
         CreateMap<Payment, PaymentDto>().ReverseMap();
         CreateMap<Payment, PaymentRegularRequestDto>().ReverseMap();
     }
