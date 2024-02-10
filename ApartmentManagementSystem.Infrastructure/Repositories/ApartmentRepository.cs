@@ -8,13 +8,12 @@ namespace ApartmentManagementSystem.Infrastructure.Repositories;
 
 public class ApartmentRepository(AppDbContext context) : IApartmentRepository
 {
-    // todo: List dönmesi gerekiyor
-    public async Task<IEnumerable<Apartment>> GetAllAsync()
+    public async Task<IEnumerable<Apartment?>> GetAllAsync()
     {
         return await context.Apartment.ToListAsync();
     }
 
-    public async Task<Apartment> GetByIdAsync(int apartmentId)
+    public async Task<Apartment?> GetByIdAsync(int apartmentId)
     {
         return await context.Apartment.FindAsync(apartmentId);
     }
@@ -41,6 +40,11 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
         }
     }
 
+    public async Task<bool> IsUserAssignedToAnyApartmentAsync(Guid userId)
+    {
+        return await context.Apartment.AnyAsync(a => a.UserId == userId);
+    }
+
     public async Task<int> GetApartmentIdsByUserIdAsync(Guid userId)
     {
         return await context.Apartment
@@ -49,7 +53,7 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<List<Apartment>> GetActiveApartmentsByBlock(string block)
+    public async Task<List<Apartment>> GetActiveApartmentsByBlockAsync(string block)
     {
         return await context.Apartment
             .Where(a => a.Block == block && a.Status == true)
@@ -62,13 +66,5 @@ public class ApartmentRepository(AppDbContext context) : IApartmentRepository
             .AnyAsync(a => apartmentIds
             .Contains(a.ApartmentId));
     }
-
-    //public async Task<List<Invoice>> GetInvoicesByApartmentIdAsync(int lastYear)
-    //{
-    //    return await context.Apartment
-    //        .Include(a => a.Invoice)
-    //        .Where(a => a.Invoice.Any(i => i.Year == lastYear && i.Type == InvoiceType.Dues))
-    //        .ToListAsync();
-    //}
 
 }

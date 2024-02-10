@@ -1,6 +1,6 @@
 ﻿namespace ApartmentManagementSystem.Core.DTOs.ApartmentDto;
 
-public class ApartmentGetAllResponseDto
+public class ApartmentResponseDto
 {
     public int ApartmentId { get; set; }
     public string Block { get; set; }

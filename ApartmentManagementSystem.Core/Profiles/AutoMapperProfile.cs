@@ -16,14 +16,11 @@ public class AutoMapperProfile : Profile
         CreateMap<User, UserResponseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
 
-        CreateMap<User, AuthAdminRequestDto>().ReverseMap();
-        CreateMap<User, AuthUserRequestDto>().ReverseMap();
-
         // Apartment için mapping konfigürasyonu
-        CreateMap<Apartment, ApartmentGetAllResponseDto>().ReverseMap();
-        CreateMap<Apartment, ApartmentCreateRequestDto>().ReverseMap();
-        CreateMap<Apartment, ApartmentUpdateRequestDto>().ReverseMap();
-        CreateMap<Apartment, ApartmentAssignUserToRequestDto>().ReverseMap();
+        CreateMap<Apartment, ApartmentResponseDto>();
+        CreateMap<Apartment, ApartmentCreateRequestDto>();
+        CreateMap<Apartment, ApartmentUpdateRequestDto>();
+        CreateMap<Apartment, ApartmentAssignUserRequestDto>().ReverseMap();
 
         // Invoice için mapping konfigürasyonu
         CreateMap<Invoice, InvoiceResponseDto>().ReverseMap();

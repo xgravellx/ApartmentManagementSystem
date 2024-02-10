@@ -74,7 +74,7 @@ public class UserService(UserManager<User> userManager, RoleManager<Role> roleMa
 
         if (user == null)
         {
-            return ResponseDto<bool>.Fail("User is not found");
+            return ResponseDto<bool>.Fail("User not found");
         }
 
         user.FullName = request.FullName;

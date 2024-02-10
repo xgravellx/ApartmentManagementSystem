@@ -1,5 +1,5 @@
 ﻿using ApartmentManagementSystem.Models.Enums;
-using static ApartmentManagementSystem.Core.DTOs.ApartmentDto.ApartmentGetAllResponseDto;
+using static ApartmentManagementSystem.Core.DTOs.ApartmentDto.ApartmentResponseDto;
 
 namespace ApartmentManagementSystem.Core.DTOs.InvoiceDto;
 

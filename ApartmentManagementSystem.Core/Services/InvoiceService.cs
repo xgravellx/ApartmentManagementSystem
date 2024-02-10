@@ -76,7 +76,7 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             return ResponseDto<bool?>.Fail("You can create dues for each apartment.");
         }
 
-        var activeApartments = await unitOfWork.ApartmentRepository.GetActiveApartmentsByBlock(request.Block);
+        var activeApartments = await unitOfWork.ApartmentRepository.GetActiveApartmentsByBlockAsync(request.Block);
         if (!activeApartments.Any())
         {
             return ResponseDto<bool?>.Fail("No active apartments found for the block.");

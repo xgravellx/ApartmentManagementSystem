@@ -37,7 +37,7 @@ namespace ApartmentManagementSystem.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateApartment(ApartmentCreateRequestDto request)
         {
-            var response = await apartmentService.CreateApartment(request);
+            var response = await apartmentService.Create(request);
             if (response.AnyError)
             {
                 return BadRequest(response.Errors);
@@ -68,9 +68,9 @@ namespace ApartmentManagementSystem.API.Controllers
         }
 
         [HttpPost("assign-user")]
-        public async Task<IActionResult> AssignUserToApartment(ApartmentAssignUserToRequestDto request)
+        public async Task<IActionResult> AssignUserToApartment(ApartmentAssignUserRequestDto request)
         {
-            var response = await apartmentService.AssignUserToApartment(request);
+            var response = await apartmentService.AssignApartmentToUser(request);
             if (response.AnyError)
             {
                 return BadRequest(response.Errors);
