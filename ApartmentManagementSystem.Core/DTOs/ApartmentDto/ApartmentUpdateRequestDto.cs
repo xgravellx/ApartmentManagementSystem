@@ -11,3 +11,4 @@ public class ApartmentUpdateRequestDto
     public int Number { get; set; }
 
     public Guid? UserId { get; set; }
+}
