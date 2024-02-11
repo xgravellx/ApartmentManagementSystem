@@ -8,6 +8,5 @@ public class ApartmentCreateRequestDto
     public int Floor { get; set; }
     public int Number { get; set; }
 
-    public Guid? UserId { get; set; } // Daire sahibinin kullanıcı Id'si (isteğe bağlı)
-
+    public Guid? UserId { get; set; }
 }

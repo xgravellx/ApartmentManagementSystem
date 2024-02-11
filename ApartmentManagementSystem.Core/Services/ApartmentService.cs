@@ -43,13 +43,7 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
             return ResponseDto<int?>.Fail("An apartment with the specified floor and number already exists.");
         }
 
-        var isAssigned = await userManager.Users.AnyAsync(user => user.ApartmentId == null);
-        if (isAssigned)
-        {
-            return ResponseDto<int?>.Fail("There is no user to assign to the apartment.");
-        }
-   
-        var apartment = mapper.Map<Apartment>(request); // yeni bir nesne oluşturup kaynak nesnedeki verilerle doldurmak için kullanılır
+        var apartment = mapper.Map<Apartment>(request);
         await unitOfWork.ApartmentRepository.AddAsync(apartment);
 
         return ResponseDto<int?>.Success(apartment.ApartmentId);
@@ -76,8 +70,7 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
             return ResponseDto<bool?>.Fail("This user is assigned to another apartment.");
         }
 
-
-        mapper.Map(request, apartment); // var olan bir nesnenin verilerini başka bir nesneye kopyalamak için kullanılır
+        mapper.Map(request, apartment);
         await unitOfWork.ApartmentRepository.UpdateAsync(apartment);
 
         return ResponseDto<bool?>.Success(true);
@@ -116,9 +109,12 @@ public class ApartmentService(IUnitOfWork unitOfWork, IMapper mapper, UserManage
             return ResponseDto<bool?>.Fail("This user is already assigned to an apartment.");
         }
 
+        user.ApartmentId = request.ApartmentId;
+
         apartment.UserId = request.UserId;
         apartment.Status = true;
 
+        await userManager.UpdateAsync(user);
         await unitOfWork.ApartmentRepository.UpdateAsync(apartment);
         return ResponseDto<bool?>.Success(true);
     }

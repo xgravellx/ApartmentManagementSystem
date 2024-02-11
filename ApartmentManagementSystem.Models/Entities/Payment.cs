@@ -2,7 +2,6 @@
 
 namespace ApartmentManagementSystem.Models.Entities;
 
-// Payment'ın ise bu ödeme talebinin karşılanması (yani ödemenin gerçekleştirilmiş olması) anlamına
 public class Payment
 {
     public int PaymentId { get; set; }

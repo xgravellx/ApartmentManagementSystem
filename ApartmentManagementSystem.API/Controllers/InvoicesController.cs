@@ -6,8 +6,6 @@ using ApartmentManagementSystem.Models.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ApartmentManagementSystem.Models.Shared;
-using ApartmentManagementSystem.Models.Entities;
 
 namespace ApartmentManagementSystem.API.Controllers
 {

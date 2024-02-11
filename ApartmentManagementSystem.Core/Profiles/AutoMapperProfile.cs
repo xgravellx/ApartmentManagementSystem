@@ -15,14 +15,13 @@ public class AutoMapperProfile : Profile
     {
         CreateMap<User, UserResponseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
+        CreateMap<User, UserRegularResponseDto>();
 
-        // Apartment için mapping konfigürasyonu
         CreateMap<Apartment, ApartmentResponseDto>();
         CreateMap<Apartment, ApartmentCreateRequestDto>().ReverseMap();
         CreateMap<Apartment, ApartmentUpdateRequestDto>().ReverseMap();
         CreateMap<Apartment, ApartmentAssignUserRequestDto>().ReverseMap();
 
-        // Invoice için mapping konfigürasyonu
         CreateMap<Invoice, InvoiceResponseDto>();
         CreateMap<Invoice, InvoiceByApartmentIdRequestDto>().ReverseMap();
         CreateMap<Invoice, InvoiceFilterRequestDto>().ReverseMap();
@@ -30,7 +29,6 @@ public class AutoMapperProfile : Profile
         CreateMap<Invoice, InvoiceCreateGeneralRequestDto>().ReverseMap(); 
         CreateMap<Invoice, InvoiceUpdateRequestDto>().ReverseMap();
 
-        // Payment için mapping konfigürasyonu
         CreateMap<Payment, PaymentGetAllResponseDto>();
         CreateMap<Payment, PaymentDto>().ReverseMap();
         CreateMap<Payment, PaymentRegularRequestDto>().ReverseMap();

@@ -30,7 +30,6 @@ public class TokenGeneratorHelper(UserManager<User> userManager, IConfiguration 
             new (ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
-        // Add role claims
         var roles = await userManager.GetRolesAsync(user);
         foreach (var role in roles)
         {

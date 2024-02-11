@@ -22,6 +22,13 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Invoice>> GetInvoicesByIdsAsync(IEnumerable<int> invoiceIds)
+    {
+        return await context.Invoice
+            .Where(invoice => invoiceIds.Contains(invoice.InvoiceId))
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Invoice>> GetFilteredAsync(InvoiceFilterRequestDto request)
     {
         IQueryable<Invoice> query = context.Invoice.Include(i => i.Apartment).AsQueryable();
@@ -154,4 +161,5 @@ public class InvoiceRepository(AppDbContext context) : IInvoiceRepository
         return await query.SumAsync(i => i.PayableAmount);
     }
 
+    
 }

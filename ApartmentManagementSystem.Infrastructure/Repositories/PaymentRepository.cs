@@ -86,17 +86,14 @@ public class PaymentRepository(AppDbContext context) : IPaymentRepository
 
     public async Task<decimal> CalculateUserDebt(Guid userId)
     {
-        // Ödenmemiş faturaların toplamı
         var unpaidInvoicesTotal = await context.Invoice
             .Where(i => i.Apartment.UserId == userId && !i.PaymentStatus)
             .SumAsync(i => i.Amount);
 
-        // Kullanıcının yaptığı ödemelerin toplamı
         var paymentsTotal = await context.Payment
             .Where(p => p.UserId == userId)
             .SumAsync(p => p.Amount);
 
-        // Güncel borç durumu
         var currentDebt = unpaidInvoicesTotal - paymentsTotal;
 
         return currentDebt;

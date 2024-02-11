@@ -9,6 +9,5 @@ public class PaymentGetAllResponseDto
     public decimal Amount { get; set; }
     public DateTime Date { get; set; }
     public PaymentMethod Method { get; set; }
-    public int ApartmentId { get; set; }
     public Guid UserId { get; set; }
 }

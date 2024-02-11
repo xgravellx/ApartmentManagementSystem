@@ -9,15 +9,11 @@ using ApartmentManagementSystem.Infrastructure.Interfaces;
 using ApartmentManagementSystem.Infrastructure.Repositories;
 using ApartmentManagementSystem.Models.Entities;
 using Hangfire;
-using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
 
 builder.Services.AddControllers();
 
@@ -79,7 +75,7 @@ builder.Services.AddHangfire(config =>
 {
     config.UseSqlServerStorage(builder.Configuration.GetConnectionString("SqlServer"));
 });
-
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -90,17 +86,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHangfireDashboard();
-app.UseHangfireServer();
 
-RecurringJob.AddOrUpdate<IInvoiceService>(
-    "CheckAndApplyOverDue", // Ýþe verilecek benzersiz bir isim
-    service => service.CheckAndApplyOverDue(),
-    "0 0 * * *"); // CRON ifadesi: Her gün gece yarýsýnda
+// test
+//BackgroundJob.Enqueue<IUserService>(service => service.UpdateRegularUserAsync());
 
-//RecurringJob.AddOrUpdate<IApartmentService>(
-//       "UpdateRegularStatusForUsers",
-//       service => service.UpdateRegularStatusForUsers(),
-//       Cron.Yearly); // CRON ifadesi: Her sene 1 Ocak'ta)
+RecurringJob.AddOrUpdate<IUserService>(
+    "UpdateRegularUserAsync",
+    service => service.UpdateRegularUserAsync(),
+    Cron.Yearly);
 
 app.UseHttpsRedirection();
 

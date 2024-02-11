@@ -38,7 +38,7 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             return ResponseDto<int>.Fail("User not found.");
         }
 
-        var invoice = await unitOfWork.InvoiceRepository.GetByUserIdAsync(request.UserId);
+        var invoice = await unitOfWork.InvoiceRepository.GetByIdAsync(request.InvoiceId);
         if (invoice == null)
         {
             return ResponseDto<int>.Fail("Invoice not found.");
@@ -114,34 +114,4 @@ public class PaymentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
         return ResponseDto<bool>.Success(true);
     }
 
-    // düzenli ödeme yapan ya da yapmayan kullanıcıları getir
-    // todo: kontrol et
-    public async Task<ResponseDto<List<User>>> GetRegularPaymentUsers(PaymentRegularRequestDto request)
-    {
-        if (request.Month is < 1 or > 12)
-        {
-            return ResponseDto<List<User>>.Fail("Month must be between 1 and 12.");
-        }
-
-        var userIds = await unitOfWork.PaymentRepository.GetUserIdsWithRegularPayments(request.Month, request.Year);
-
-        var users = new List<User>();
-
-        foreach (var userId in userIds)
-        {
-            var user = await userManager.FindByIdAsync(userId.ToString());
-            if (user != null)
-            {
-                users.Add(user);
-            }
-        }
-
-        return ResponseDto<List<User>>.Success(users ?? []);
-
-    }
-
-    // GetLastPaymentByApartmentId
-    // kullanıcı için ödeme sistemi
-    // fatura/Aidat ay sonuna kadar ödenmemişse %10 ceza uygula
-    // 1 sene boyunca aidatlarını düzenli ödeyen kullanıcılar, bir sonraki sene aidatlarını %10 indirimli öder
 }

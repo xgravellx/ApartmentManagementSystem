@@ -1,7 +1,6 @@
 ﻿using ApartmentManagementSystem.Core.DTOs.UserDto;
 using ApartmentManagementSystem.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApartmentManagementSystem.API.Controllers
@@ -90,6 +89,19 @@ namespace ApartmentManagementSystem.API.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpGet("regular")]
+        public async Task<IActionResult> GetRegularUsers()
+        {
+            var response = await userService.GetRegularPayingUsers();
+            
+            if (response.AnyError)
+            {
+                return NotFound(response.Errors);
+            }
+
+            return Ok(response.Data);
         }
     }
 }

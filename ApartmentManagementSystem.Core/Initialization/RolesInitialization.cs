@@ -14,10 +14,7 @@ public class RolesInitialization(IServiceProvider serviceProvider) : IHostedServ
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-            // Rol oluşturma işlemleri
             await CreateRolesAsync(roleManager);
-
-            // Yönetici kullanıcı oluşturma işlemleri
             await CreateAdminUserAsync(userManager);
         }
     }
@@ -37,7 +34,6 @@ public class RolesInitialization(IServiceProvider serviceProvider) : IHostedServ
 
     private async Task CreateAdminUserAsync(UserManager<User> userManager)
     {
-        // Kullanıcı adı "admin" olduğu için, "admin" ile arama yapılmalıdır.
         var adminUser = await userManager.FindByNameAsync("admin");
 
         if (adminUser == null)
@@ -68,7 +64,6 @@ public class RolesInitialization(IServiceProvider serviceProvider) : IHostedServ
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        // Uygulama kapanırken gerekli temizlik işlemleri burada yapılabilir.
         return Task.CompletedTask;
     }
 

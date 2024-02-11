@@ -15,7 +15,6 @@ namespace ApartmentManagementSystem.Core.Services;
 
 public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager) : IInvoiceService
 {
-    // fatura listesi
     public async Task<ResponseDto<List<InvoiceResponseDto>>> GetAll()
     {
         var invoices = await unitOfWork.InvoiceRepository.GetAllAsync();
@@ -24,7 +23,6 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
         return ResponseDto<List<InvoiceResponseDto>>.Success(invoiceDtoList);
     }
 
-    // apartment id ye göre faturaları getir
     public async Task<ResponseDto<List<InvoiceResponseDto>>> GetInvoicesByApartmentId(int apartmentId, string identityNumber, bool isAdmin)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == identityNumber);
@@ -39,8 +37,6 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
     }
 
-    // user -> ay, yıl ve ödeme durumuna göre fatura listesi
-    // admin -> blok, , uaparmentsser, ay, yıl ve ödeme durumuna göre fatura listesi
     public async Task<ResponseDto<InvoiceFilterResponseDto>> GetFiltered(InvoiceFilterRequestDto request, string identityNumber, bool isAdmin)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(u => u.IdentityNumber == identityNumber);
@@ -62,7 +58,6 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
             TotalAmount = totalAmount,
             Invoices = invoiceDtoList
         };
-
 
         return ResponseDto<InvoiceFilterResponseDto>.Success(result);
     }
@@ -149,6 +144,8 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
         foreach (var apartmentId in request.ApartmentIds!)
         {
+            var dueDate = DateHelper.CalculateDueDate(request.Year, request.Month);
+
             var invoice = new Invoice
             {
                 Type = request.Type,
@@ -158,6 +155,7 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
                 Month = request.Month,
                 PaymentStatus = false,
                 ApartmentId = apartmentId,
+                DueDate = dueDate
             };
 
             await unitOfWork.InvoiceRepository.AddInvoiceAsync(invoice);
@@ -216,23 +214,4 @@ public class InvoiceService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<
 
         return ResponseDto<bool?>.Success(true);
     }
-
-
-    // todo: test etmelisin.
-    public async Task CheckAndApplyOverDue()
-    {
-        var today = DateTime.UtcNow.AddHours(3);
-        var invoicesToUpdate = await unitOfWork.InvoiceRepository.GetUnpaidAndOverdueInvoicesAsync(today);
-
-        foreach (var invoice in invoicesToUpdate)
-        {
-            // %10 ceza uygulayın
-            invoice.Amount += invoice.Amount * 0.10m;
-            await unitOfWork.InvoiceRepository.UpdateInvoiceAsync(invoice);
-        }
-
-        // Değişiklikleri veritabanına kaydedin
-        await unitOfWork.SaveChangesAsync();
-    }
-
 }

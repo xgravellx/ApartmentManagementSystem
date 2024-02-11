@@ -12,4 +12,6 @@ public interface IUserService
     Task<ResponseDto<bool>> UpdateUser(UserUpdateRequestDto request);
     Task<ResponseDto<bool>> DeleteUser(Guid userId);
     Task<ResponseDto<bool>> AssignRoleToUser(UserAssignToRoleRequestDto request);
+    Task<ResponseDto<List<UserRegularResponseDto>>> GetRegularPayingUsers();
+    Task UpdateRegularUserAsync();
 }

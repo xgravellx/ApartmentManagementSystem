@@ -29,7 +29,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasOne(i => i.Apartment)
             .WithMany(a => a.Invoice)
             .HasForeignKey(i => i.ApartmentId)
-            .OnDelete(DeleteBehavior.Cascade); // Bir Apartment silindiğinde ilişkili Invoices da silinir.
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
 }
